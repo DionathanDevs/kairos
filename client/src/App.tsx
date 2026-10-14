@@ -6,6 +6,7 @@ import { HabitGrid } from './components/HabitGrid';
 import { WeeklyChart } from './components/WeeklyChart';
 import { ConsistencyHeatmap } from './components/ConsistencyHeatmap';
 import { HabitModal } from './components/HabitModal';
+import { ConfirmModal } from './components/ConfirmModal';
 import { api } from './api/client';
 import type { HabitWithWeekLogs, DashboardStats, HeatmapData, Habit, Language } from './types';
 import { translations } from './i18n/translations';
@@ -32,6 +33,7 @@ export function App() {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [habitToEdit, setHabitToEdit] = useState<Habit | null>(null);
+  const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
 
   // Toast State
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -122,15 +124,18 @@ export function App() {
     }
   };
 
-  // Handle Reset Week
-  const handleResetWeek = async () => {
-    const t = translations[lang];
-    if (!window.confirm(t.modal.confirmReset)) return;
+  // Trigger Reset Week Confirmation Dialog
+  const handleResetWeek = () => {
+    setShowResetConfirmModal(true);
+  };
 
+  // Execute Reset Week after user confirms in Custom Modal
+  const handleExecuteResetWeek = async () => {
     try {
       setActionLoading(true);
       await api.resetWeek();
       await loadData();
+      setShowResetConfirmModal(false);
     } catch (err) {
       console.error('Failed to reset week:', err);
     } finally {
@@ -224,6 +229,19 @@ export function App() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveHabit}
         onDelete={handleDeleteHabit}
+      />
+
+      {/* Confirmation Modal for Resetting Current Week */}
+      <ConfirmModal
+        isOpen={showResetConfirmModal}
+        title={lang === 'pt' ? 'Resetar Semana' : 'Reset Week'}
+        message={translations[lang].modal.confirmReset}
+        confirmLabel={lang === 'pt' ? 'Sim, Resetar' : 'Yes, Reset'}
+        cancelLabel={translations[lang].modal.cancel}
+        isDestructive={true}
+        isLoading={actionLoading}
+        onConfirm={handleExecuteResetWeek}
+        onCancel={() => setShowResetConfirmModal(false)}
       />
     </div>
   );
