@@ -1,7 +1,7 @@
 {
   "name": "Monitor de Hábitos",
   "short_name": "Hábitos",
-  "description": "Acompanhamento diário e consistência semanal com tracking estilo GitHub",
+  "description": "Acompanhamento diário, consistência semanal e mapa de disciplina anual",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0c0e12",

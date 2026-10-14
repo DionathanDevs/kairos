@@ -4,7 +4,7 @@ import { Header } from './components/Header';
 import { StatCards } from './components/StatCards';
 import { HabitGrid } from './components/HabitGrid';
 import { WeeklyChart } from './components/WeeklyChart';
-import { GitHubHeatmap } from './components/GitHubHeatmap';
+import { ConsistencyHeatmap } from './components/ConsistencyHeatmap';
 import { HabitModal } from './components/HabitModal';
 import { api } from './api/client';
 import type { HabitWithWeekLogs, DashboardStats, HeatmapData, Habit, Language } from './types';
@@ -200,6 +200,9 @@ export function App() {
         {/* 3 Metric Cards (Sequência Perfeita, Consistência, Hoje) */}
         <StatCards stats={stats} lang={lang} />
 
+        {/* Motivational Consistency Heatmap (Front & Center) */}
+        <ConsistencyHeatmap data={heatmapData} lang={lang} />
+
         {/* Habit Matrix with Weekdays & Green Circular Buttons */}
         <HabitGrid
           habits={habits}
@@ -211,9 +214,6 @@ export function App() {
 
         {/* Weekly Bar Chart (Desempenho Diário da Semana) */}
         <WeeklyChart dailySummary={stats.weekDailySummary} lang={lang} />
-
-        {/* GitHub Style Contribution Heatmap */}
-        <GitHubHeatmap data={heatmapData} lang={lang} />
       </main>
 
       {/* Habit Create / Edit Modal / Bottom Sheet */}
