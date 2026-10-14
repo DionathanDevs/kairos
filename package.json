@@ -9,6 +9,10 @@
     "build:client": "npm run build --prefix client",
     "build:server": "npm run build --prefix server",
     "build": "npm run build:client && npm run build:server",
-    "start": "npm start --prefix server"
+    "start": "npm start --prefix server",
+    "migrate": "npm run migrate --prefix server",
+    "test": "npm run test --prefix server",
+    "test:unit": "npm run test:unit --prefix server",
+    "test:integration": "npm run test:integration --prefix server"
   }
 }
