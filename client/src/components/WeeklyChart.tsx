@@ -53,7 +53,7 @@ export const WeeklyChart: React.FC<WeeklyChartProps> = ({ dailySummary, lang }) 
                 // Color matches reference screenshot:
                 // Full/perfect days are Emerald Green (#10b981)
                 // Partial days are Soft Cyan / Light Blue (#93c5fd)
-                const barColor = isMax ? 'bg-brand-green shadow-sm shadow-brand-green/30' : 'bg-brand-cyanLight';
+                const barColor = isMax ? 'bg-brand-green' : 'bg-brand-cyanLight';
 
                 return (
                   <div

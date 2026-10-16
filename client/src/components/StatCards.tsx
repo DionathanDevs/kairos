@@ -14,7 +14,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats, lang }) => {
   const localizedTodayDayName = (t.dayLabels as Record<string, string>)[stats.todayDayName] || stats.todayDayName;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 my-6">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
       {/* 1. Sequência Perfeita */}
       <div className="bg-dark-card border border-dark-border/80 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all hover:border-dark-subtle">
         <span className="text-[11px] sm:text-xs font-semibold tracking-wider text-gray-400 uppercase">

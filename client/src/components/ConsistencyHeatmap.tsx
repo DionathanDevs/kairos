@@ -43,9 +43,9 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ data, la
       case 2:
         return 'bg-[#047857] hover:ring-1 hover:ring-emerald-400';
       case 3:
-        return 'bg-[#10b981] hover:ring-1 hover:ring-emerald-300 shadow-xs shadow-emerald-500/20';
+        return 'bg-[#10b981] hover:ring-1 hover:ring-emerald-300';
       case 4:
-        return 'bg-[#34d399] shadow-xs shadow-emerald-400/50 hover:ring-1 hover:ring-white';
+        return 'bg-[#34d399] hover:ring-1 hover:ring-white';
       case 0:
       default:
         return 'bg-[#181b22] border border-[#232732] hover:border-gray-500';
@@ -65,8 +65,6 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ data, la
 
   return (
     <div className="bg-dark-card border border-dark-border/80 rounded-2xl p-4 sm:p-6 mb-6 shadow-xl relative overflow-hidden">
-      {/* Background subtle glowing accent */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-brand-green/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 relative z-10">
@@ -173,7 +171,7 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ data, la
             top: `${hoveredDay.y - 10}px`,
             transform: 'translate(-50%, -100%)'
           }}
-          className="z-50 pointer-events-none bg-dark-bg/95 backdrop-blur-sm border border-dark-border text-white text-xs px-2.5 py-1.5 rounded-lg shadow-2xl whitespace-nowrap flex flex-col items-center gap-0.5"
+          className="z-50 pointer-events-none bg-dark-bg border border-dark-border text-white text-xs px-2.5 py-1.5 rounded-lg shadow-2xl whitespace-nowrap flex flex-col items-center gap-0.5"
         >
           <div className="font-semibold text-brand-greenLight">
             {hoveredDay.day.count} / {hoveredDay.day.total} {lang === 'pt' ? 'hábitos concluídos' : 'habits completed'}

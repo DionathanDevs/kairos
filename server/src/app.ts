@@ -81,7 +81,7 @@ export function createApp(options: CreateAppOptions = {}): { app: Express; db: D
   });
 
   // Serve frontend static files if built
-  const clientDistPath = path.resolve(__dirname, '../../client/dist');
+  const clientDistPath = process.env.CLIENT_DIST_PATH || path.resolve(__dirname, '../../client/dist');
   if (fs.existsSync(clientDistPath)) {
     app.use(express.static(clientDistPath));
     app.get('*', (_req, res) => {

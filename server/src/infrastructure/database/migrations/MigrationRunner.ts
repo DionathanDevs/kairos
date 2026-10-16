@@ -12,8 +12,8 @@ export class MigrationRunner {
 
   constructor(db: DatabaseSync, migrationsDir?: string) {
     this.db = db;
-    // Default migrations directory is server/migrations
-    this.migrationsDir = migrationsDir || path.resolve(__dirname, '../../../../migrations');
+    // Default migrations directory is server/migrations or via MIGRATIONS_DIR
+    this.migrationsDir = migrationsDir || process.env.MIGRATIONS_DIR || path.resolve(__dirname, '../../../../migrations');
   }
 
   public run(): string[] {

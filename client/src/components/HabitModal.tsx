@@ -108,7 +108,7 @@ export const HabitModal: React.FC<HabitModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-sm transition-opacity">
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 transition-opacity">
         {/* Click outside to close */}
         <div className="fixed inset-0" onClick={onClose} />
 
@@ -234,7 +234,7 @@ export const HabitModal: React.FC<HabitModalProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-brand-green text-black hover:bg-brand-greenLight transition-all active:scale-95 disabled:opacity-50 shadow-md shadow-brand-green/20 flex items-center gap-2"
+                  className="px-5 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-brand-green text-black hover:bg-brand-greenLight transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
                 >
                   {isSubmitting ? (
                     <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />

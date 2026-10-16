@@ -186,7 +186,7 @@ export function App() {
     <div className="min-h-screen bg-dark-bg text-gray-100 px-3 sm:px-6 py-4 sm:py-8 font-sans selection:bg-brand-green selection:text-black">
       {/* Toast message notification */}
       {toastMessage && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-green text-black font-semibold text-xs sm:text-sm px-4 py-2 rounded-full shadow-lg animate-in fade-in slide-in-from-top duration-200">
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-green text-black font-semibold text-xs sm:text-sm px-4 py-2 rounded-full animate-in fade-in slide-in-from-top duration-200">
           {toastMessage}
         </div>
       )}
@@ -202,22 +202,24 @@ export function App() {
           isActionLoading={actionLoading}
         />
 
-        {/* 3 Metric Cards (Sequência Perfeita, Consistência, Hoje) */}
-        <StatCards stats={stats} lang={lang} />
+        {/* 1. Habit Matrix with Weekdays & Green Circular Buttons */}
+        <div className="mt-6">
+          <HabitGrid
+            habits={habits}
+            weekDays={weekDays}
+            lang={lang}
+            onToggleDay={handleToggleDay}
+            onEditHabit={handleEditHabit}
+          />
+        </div>
 
-        {/* Motivational Consistency Heatmap (Front & Center) */}
+        {/* 2. Motivational Consistency Heatmap (CONSISTENCY HISTORY) */}
         <ConsistencyHeatmap data={heatmapData} lang={lang} />
 
-        {/* Habit Matrix with Weekdays & Green Circular Buttons */}
-        <HabitGrid
-          habits={habits}
-          weekDays={weekDays}
-          lang={lang}
-          onToggleDay={handleToggleDay}
-          onEditHabit={handleEditHabit}
-        />
+        {/* 3. Metric Cards (Sequência Perfeita, Consistência, Hoje) */}
+        <StatCards stats={stats} lang={lang} />
 
-        {/* Weekly Bar Chart (Desempenho Diário da Semana) */}
+        {/* 4. Weekly Bar Chart (Desempenho Diário da Semana / Completed Habits) */}
         <WeeklyChart dailySummary={stats.weekDailySummary} lang={lang} />
       </main>
 

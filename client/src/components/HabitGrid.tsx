@@ -89,7 +89,7 @@ export const HabitGrid: React.FC<HabitGridProps> = ({
                         title={`${habit.title} - ${day.date} (${day.completed ? 'Concluído' : 'Pendente'})`}
                         className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 ${
                           day.completed
-                            ? 'bg-brand-green text-black shadow-md shadow-brand-green/20 hover:bg-brand-greenLight animate-check-pop'
+                            ? 'bg-brand-green text-black hover:bg-brand-greenLight animate-check-pop'
                             : 'bg-[#181b22] border border-[#262c38] text-transparent hover:border-gray-500 hover:bg-[#202530]'
                         }`}
                       >

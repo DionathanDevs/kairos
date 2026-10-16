@@ -38,7 +38,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-all animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 transition-all animate-in fade-in duration-150">
       {/* Backdrop overlay */}
       <div className="fixed inset-0" onClick={() => !isLoading && onCancel()} />
 
@@ -90,8 +90,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             disabled={isLoading}
             className={`px-5 py-2 text-xs sm:text-sm font-semibold rounded-xl text-white transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2 ${
               isDestructive
-                ? 'bg-red-600 hover:bg-red-500 shadow-md shadow-red-600/20'
-                : 'bg-brand-green hover:bg-brand-greenLight text-black font-bold shadow-md shadow-brand-green/20'
+                ? 'bg-red-600 hover:bg-red-500'
+                : 'bg-brand-green hover:bg-brand-greenLight text-black font-bold'
             }`}
           >
             {isLoading ? (

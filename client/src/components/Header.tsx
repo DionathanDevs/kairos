@@ -66,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           onClick={onOpenNewHabit}
-          className="flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold rounded-full bg-brand-green text-black hover:bg-brand-greenLight transition-all active:scale-95 shadow-lg shadow-brand-green/20"
+          className="flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold rounded-full bg-brand-green text-black hover:bg-brand-greenLight transition-all active:scale-95"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
           <span>{t.newHabit}</span>
