@@ -11,8 +11,17 @@ services:
       - NODE_ENV=production
       - PORT=3001
       - DATABASE_PATH=/app/server/data/habits.db
+      - NODE_OPTIONS=--max-old-space-size=200
     volumes:
       - habits-data:/app/server/data
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+        reservations:
+          cpus: "0.10"
+          memory: 128M
 
 volumes:
   habits-data:

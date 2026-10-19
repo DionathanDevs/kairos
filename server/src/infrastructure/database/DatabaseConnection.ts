@@ -17,7 +17,9 @@ export function getDatabase(customPath?: string): DatabaseSync {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    return new DatabaseSync(customPath);
+    const db = new DatabaseSync(customPath);
+    db.exec('PRAGMA journal_mode = WAL;');
+    return db;
   }
 
   if (!globalDb) {
@@ -28,6 +30,7 @@ export function getDatabase(customPath?: string): DatabaseSync {
       fs.mkdirSync(dbDir, { recursive: true });
     }
     globalDb = new DatabaseSync(dbPath);
+    globalDb.exec('PRAGMA journal_mode = WAL;');
   }
 
   return globalDb;
