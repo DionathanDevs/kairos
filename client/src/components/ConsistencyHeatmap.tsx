@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Flame, Sparkles } from 'lucide-react';
 import type { HeatmapData, HeatmapDay, Language } from '../types';
 import { translations } from '../i18n/translations';
@@ -6,11 +6,16 @@ import { translations } from '../i18n/translations';
 interface ConsistencyHeatmapProps {
   data: HeatmapData | null;
   lang: Language;
+  todayDate?: string;
 }
 
-export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ data, lang }) => {
+export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ data, lang, todayDate }) => {
   const t = translations[lang];
   const [hoveredDay, setHoveredDay] = useState<{ day: HeatmapDay; x: number; y: number } | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const todayColRef = useRef<HTMLDivElement>(null);
+
+  const targetToday = todayDate || new Date().toISOString().split('T')[0];
 
   if (!data || !data.weeks || data.weeks.length === 0) {
     return null;
@@ -63,6 +68,27 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ data, la
     t.dayLabels.Dom  // Sun (6)
   ];
 
+  // Automatically center the overflow completely in the middle
+  useEffect(() => {
+    const centerOverflow = () => {
+      if (scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        if (container.scrollWidth > container.clientWidth) {
+          container.scrollLeft = Math.round((container.scrollWidth - container.clientWidth) / 2);
+        }
+      }
+    };
+
+    centerOverflow();
+    const timer = setTimeout(centerOverflow, 60);
+
+    window.addEventListener('resize', centerOverflow);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', centerOverflow);
+    };
+  }, [data]);
+
   return (
     <div className="bg-dark-card border border-dark-border/80 rounded-2xl p-4 sm:p-6 mb-6 shadow-xl relative overflow-hidden">
 
@@ -93,7 +119,10 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ data, la
       </div>
 
       {/* Heatmap Grid (Scrollable on small mobile) */}
-      <div className="overflow-x-auto scrollbar-thin pb-2 pt-2 relative z-10">
+      <div
+        ref={scrollContainerRef}
+        className="overflow-x-auto scrollbar-thin pb-2 pt-2 relative z-10"
+      >
         <div className="min-w-[620px] inline-block">
           {/* Month labels row */}
           <div className="flex pl-9 mb-1.5 text-[11px] font-medium text-gray-400 select-none">
@@ -125,27 +154,37 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ data, la
 
             {/* Weeks Columns */}
             <div className="flex gap-1 sm:gap-1.5">
-              {data.weeks.map((week, wIdx) => (
-                <div key={`week-${wIdx}`} className="flex flex-col gap-1 sm:gap-1.5">
-                  {week.map((day) => (
-                    <div
-                      key={day.date}
-                      onMouseEnter={(e) => {
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        setHoveredDay({
-                          day,
-                          x: rect.left + rect.width / 2,
-                          y: rect.top
-                        });
-                      }}
-                      onMouseLeave={() => setHoveredDay(null)}
-                      className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-xs sm:rounded-[3px] transition-all cursor-pointer ${getSquareColor(
-                        day.level
-                      )}`}
-                    />
-                  ))}
-                </div>
-              ))}
+              {data.weeks.map((week, wIdx) => {
+                const isCurrentWeek = week.some((d) => d.date === targetToday) || (wIdx === data.weeks.length - 1);
+                return (
+                  <div
+                    key={`week-${wIdx}`}
+                    ref={isCurrentWeek ? todayColRef : undefined}
+                    className="flex flex-col gap-1 sm:gap-1.5"
+                  >
+                    {week.map((day) => {
+                      const isTodayDay = day.date === targetToday;
+                      return (
+                        <div
+                          key={day.date}
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setHoveredDay({
+                              day,
+                              x: rect.left + rect.width / 2,
+                              y: rect.top
+                            });
+                          }}
+                          onMouseLeave={() => setHoveredDay(null)}
+                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-xs sm:rounded-[3px] transition-all cursor-pointer ${getSquareColor(
+                            day.level
+                          )} ${isTodayDay ? 'ring-1 ring-white/80' : ''}`}
+                        />
+                      );
+                    })}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

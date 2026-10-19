@@ -183,10 +183,10 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-bg text-gray-100 px-3 sm:px-6 py-4 sm:py-8 font-sans selection:bg-brand-green selection:text-black">
+    <div className="min-h-screen bg-dark-bg text-gray-100 safe-area-container font-sans selection:bg-brand-green selection:text-black">
       {/* Toast message notification */}
       {toastMessage && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-green text-black font-semibold text-xs sm:text-sm px-4 py-2 rounded-full animate-in fade-in slide-in-from-top duration-200">
+        <div className="fixed top-[max(1.25rem,env(safe-area-inset-top,0px))] left-1/2 -translate-x-1/2 z-50 bg-brand-green text-black font-semibold text-xs sm:text-sm px-4 py-2 rounded-full animate-in fade-in slide-in-from-top duration-200">
           {toastMessage}
         </div>
       )}
@@ -214,7 +214,11 @@ export function App() {
         </div>
 
         {/* 2. Motivational Consistency Heatmap (CONSISTENCY HISTORY) */}
-        <ConsistencyHeatmap data={heatmapData} lang={lang} />
+        <ConsistencyHeatmap
+          data={heatmapData}
+          lang={lang}
+          todayDate={weekDays.find((d) => d.isToday)?.date}
+        />
 
         {/* 3. Metric Cards (Sequência Perfeita, Consistência, Hoje) */}
         <StatCards stats={stats} lang={lang} />

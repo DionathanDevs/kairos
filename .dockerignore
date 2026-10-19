@@ -3,7 +3,13 @@ client/node_modules
 server/node_modules
 client/dist
 server/dist
+data
 server/data
+*.db
+*.db-*
+*.sqlite*
+*.pem
+*.key
 .git
 .gitignore
 .env
@@ -13,3 +19,4 @@ coverage
 *.log
 .DS_Store
 Thumbs.db
+

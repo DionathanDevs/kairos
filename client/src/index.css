@@ -4,14 +4,64 @@
 
 :root {
   color-scheme: dark;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
 }
 
-body {
+html, body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: #0c0e12;
   color: #f3f4f6;
   -webkit-tap-highlight-color: transparent;
+
+  /* 3. CSS para Sensação de App Nativo */
+  /* Remove o recuo elástico "pull-to-refresh" indesejado */
+  overscroll-behavior-y: none;
+  overscroll-behavior: none;
+
+  /* Remove seleção acidental de texto ao tocar ou arrastar */
+  -webkit-user-select: none;
+  user-select: none;
+
+  /* Desativa balão flutuante de lupa/cópia no iOS */
+  -webkit-touch-callout: none;
+
+  /* Remove atraso de clique (300ms delay) e zoom duplo indesejado */
+  touch-action: manipulation;
+}
+
+/* Garante que inputs e textareas continuem permitindo seleção e digitação */
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Utilitários de Safe Area (Notch e Barra de Gestos) */
+.safe-top {
+  padding-top: max(1rem, env(safe-area-inset-top, 0px));
+}
+
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+.safe-area-container {
+  padding-top: max(1rem, env(safe-area-inset-top, 0px));
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
+  padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+  padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+}
+
+@media (min-width: 640px) {
+  .safe-area-container {
+    padding-top: max(2rem, env(safe-area-inset-top, 0px));
+    padding-bottom: max(2rem, env(safe-area-inset-bottom, 0px));
+    padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+  }
 }
 
 /* Custom subtle scrollbar for mobile horizontal scrolling */

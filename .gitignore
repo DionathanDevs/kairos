@@ -20,10 +20,14 @@ server/node_modules/
 *.cert
 *.crt
 *.pfx
+*.p12
+id_rsa*
+id_ed25519*
 secrets/
 credentials/
 
 # Database & SQLite files
+data/
 server/data/
 *.db
 *.db-journal
