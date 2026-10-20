@@ -9,9 +9,9 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/logo-kairos.png",
+      "src": "/logo-k-kairos.jpeg",
       "sizes": "192x192 512x512",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     }
   ],
@@ -22,7 +22,7 @@
       "short_name": "Criar",
       "description": "Adicionar novo hábito",
       "url": "/?action=create",
-      "icons": [{ "src": "/logo-kairos.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/logo-k-kairos.jpeg", "sizes": "192x192" }]
     }
   ]
 }

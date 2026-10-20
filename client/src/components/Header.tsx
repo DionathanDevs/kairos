@@ -2,7 +2,7 @@ import React from 'react';
 import { Plus, CheckCheck, RotateCcw, Globe } from 'lucide-react';
 import type { Language } from '../types';
 import { translations } from '../i18n/translations';
-import logoKairos from '../assets/logo-kairos.png';
+import logoKairos from '../assets/logo-k-kairos.jpeg';
 
 interface HeaderProps {
   lang: Language;
