@@ -113,128 +113,119 @@ export const HabitModal: React.FC<HabitModalProps> = ({
         <div className="fixed inset-0" onClick={onClose} />
 
         {/* Modal Box */}
-        <div className="relative z-10 w-full sm:max-w-lg bg-dark-card border border-dark-border rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl overflow-hidden transition-all transform animate-in fade-in slide-in-from-bottom duration-200">
-          {/* Mobile handle indicator */}
-          <div className="sm:hidden w-12 h-1.5 bg-dark-border rounded-full mx-auto mb-4" />
+        <div className="relative z-10 w-full sm:max-w-lg bg-dark-card border border-dark-border rounded-t-3xl sm:rounded-2xl p-6 sm:p-8 pb-8 min-h-[440px] sm:min-h-[450px] flex flex-col justify-between shadow-2xl overflow-hidden transition-all transform animate-in fade-in slide-in-from-bottom duration-200">
+          <div>
+            {/* Mobile handle indicator */}
+            <div className="sm:hidden w-12 h-1.5 bg-dark-border rounded-full mx-auto mb-4" />
 
-          {/* Modal Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-dark-border/60">
-            <h2 className="text-lg font-bold text-white">
-              {habitToEdit ? t.modal.editTitle : t.modal.createTitle}
-            </h2>
-            <button
-              onClick={onClose}
-              className="p-1 rounded-full text-gray-400 hover:text-white hover:bg-dark-cardHover transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-dark-border/60">
+              <h2 className="text-lg font-bold text-white">
+                {habitToEdit ? t.modal.editTitle : t.modal.createTitle}
+              </h2>
+              <button
+                onClick={onClose}
+                className="p-1 rounded-full text-gray-400 hover:text-white hover:bg-dark-cardHover transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Inline Validation Banner */}
+            {validationError && (
+              <div className="mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-red-400 text-xs animate-in fade-in">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{validationError}</span>
+              </div>
+            )}
           </div>
 
-          {/* Inline Validation Banner */}
-          {validationError && (
-            <div className="mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-red-400 text-xs animate-in fade-in">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{validationError}</span>
-            </div>
-          )}
-
           {/* Form */}
-          <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                  {t.modal.titleLabel} *
-                </label>
-                <span
-                  className={`text-[11px] ${
-                    title.length > 100 ? 'text-red-400 font-bold' : 'text-gray-400'
-                  }`}
-                >
-                  {title.length}/100
-                </span>
-              </div>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  if (validationError) setValidationError(null);
-                }}
-                placeholder={t.modal.titlePlaceholder}
-                className={`w-full px-4 py-2.5 rounded-xl bg-dark-bg border text-white placeholder-gray-500 text-sm outline-none transition-all ${
-                  validationError
-                    ? 'border-red-500 focus:ring-1 focus:ring-red-500'
-                    : 'border-dark-border focus:border-brand-green focus:ring-1 focus:ring-brand-green'
-                }`}
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
-                {t.modal.descLabel}
-              </label>
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder={t.modal.descPlaceholder}
-                className="w-full px-4 py-2.5 rounded-xl bg-dark-bg border border-dark-border focus:border-brand-green focus:ring-1 focus:ring-brand-green text-white placeholder-gray-500 text-sm outline-none transition-all"
-              />
-            </div>
-
-            {/* Color Tag Selection */}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
-                Cor do Hábito
-              </label>
-              <div className="flex items-center gap-3">
-                {COLOR_OPTIONS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setColor(c)}
-                    style={{ backgroundColor: c }}
-                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
-                      color === c
-                        ? 'ring-2 ring-white ring-offset-2 ring-offset-dark-card scale-110'
-                        : 'opacity-80 hover:opacity-100'
+          <form onSubmit={handleSubmit} className="mt-5 space-y-5 flex-1 flex flex-col justify-between">
+            <div className="space-y-5">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                    {t.modal.titleLabel} *
+                  </label>
+                  <span
+                    className={`text-[11px] ${
+                      title.length > 100 ? 'text-red-400 font-bold' : 'text-gray-400'
                     }`}
                   >
-                    {color === c && (
-                      <Check className="w-4 h-4 text-white stroke-[3]" />
-                    )}
-                  </button>
-                ))}
+                    {title.length}/100
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                    if (validationError) setValidationError(null);
+                  }}
+                  placeholder={t.modal.titlePlaceholder}
+                  className={`w-full px-4 py-3 rounded-xl bg-dark-bg border text-white placeholder-gray-500 text-sm outline-none transition-all ${
+                    validationError
+                      ? 'border-red-500 focus:ring-1 focus:ring-red-500'
+                      : 'border-dark-border focus:border-brand-green focus:ring-1 focus:ring-brand-green'
+                  }`}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+                  {t.modal.descLabel}
+                </label>
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder={t.modal.descPlaceholder}
+                  className="w-full px-4 py-3 rounded-xl bg-dark-bg border border-dark-border focus:border-brand-green focus:ring-1 focus:ring-brand-green text-white placeholder-gray-500 text-sm outline-none transition-all"
+                />
+              </div>
+
+              {/* Color Tag Selection */}
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2.5">
+                  Cor do Hábito
+                </label>
+                <div className="flex items-center gap-3">
+                  {COLOR_OPTIONS.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setColor(c)}
+                      style={{ backgroundColor: c }}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                        color === c
+                          ? 'ring-2 ring-white ring-offset-2 ring-offset-dark-card scale-110'
+                          : 'opacity-80 hover:opacity-100'
+                      }`}
+                    >
+                      {color === c && (
+                        <Check className="w-4 h-4 text-white stroke-[3]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Modal Actions */}
-            <div className="flex items-center justify-between pt-4 border-t border-dark-border/60 mt-6">
-              {habitToEdit && onDelete ? (
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 transition-colors font-medium"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>{t.modal.delete}</span>
-                </button>
-              ) : (
-                <div />
-              )}
-
-              <div className="flex items-center gap-2.5">
+            {/* Modal Actions (Centered & Enlarged) */}
+            <div className="flex flex-col items-center justify-center gap-3.5 pt-6 border-t border-dark-border/60 mt-7">
+              <div className="flex items-center justify-center gap-3 w-full">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 text-xs sm:text-sm font-medium rounded-xl border border-dark-border text-gray-300 hover:text-white hover:bg-dark-cardHover transition-colors"
+                  className="flex-1 sm:flex-initial min-w-[135px] sm:min-w-[155px] px-6 py-3 sm:py-3.5 text-sm font-semibold rounded-xl border border-dark-border text-gray-300 hover:text-white hover:bg-dark-cardHover transition-colors flex items-center justify-center"
                 >
                   {t.modal.cancel}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-brand-green text-black hover:bg-brand-greenLight transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                  className="flex-1 sm:flex-initial min-w-[135px] sm:min-w-[155px] px-6 py-3 sm:py-3.5 text-sm font-semibold rounded-xl bg-brand-green text-black hover:bg-brand-greenLight transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -242,6 +233,17 @@ export const HabitModal: React.FC<HabitModalProps> = ({
                   <span>{t.modal.save}</span>
                 </button>
               </div>
+
+              {habitToEdit && onDelete && (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="flex items-center justify-center gap-1.5 text-xs text-red-400 hover:text-red-300 transition-colors font-medium pt-1"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>{t.modal.delete}</span>
+                </button>
+              )}
             </div>
           </form>
         </div>

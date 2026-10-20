@@ -33,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isTasks = activeTab === 'tasks';
 
   return (
-    <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 pt-2 border-b border-dark-border">
+    <header className="mt-6 sm:mt-4 md:mt-0 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 pt-2 border-b border-dark-border">
       {/* Title & Subtitle */}
       <div className="flex flex-col items-center md:items-start text-center md:text-left">
         <div className="flex items-center justify-center md:justify-start gap-3">
