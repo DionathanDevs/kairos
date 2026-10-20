@@ -2,6 +2,7 @@ import React from 'react';
 import { Plus, CheckCheck, RotateCcw, Globe } from 'lucide-react';
 import type { Language } from '../types';
 import { translations } from '../i18n/translations';
+import logoKairos from '../assets/logo-kairos.png';
 
 interface HeaderProps {
   lang: Language;
@@ -25,11 +26,18 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 pt-2 border-b border-dark-border">
       {/* Title & Subtitle */}
-      <div>
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-            {t.appTitle}
-          </h1>
+      <div className="flex flex-col items-center md:items-start text-center md:text-left">
+        <div className="flex items-center justify-center md:justify-start gap-3">
+          <div className="flex items-center gap-2.5">
+            <img
+              src={logoKairos}
+              alt="Kairos Logo"
+              className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-lg drop-shadow"
+            />
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center">
+              {t.appTitle}
+            </h1>
+          </div>
           <button
             onClick={onToggleLang}
             title={lang === 'pt' ? 'Mudar para Inglês' : 'Switch to Portuguese'}
@@ -45,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-wrap items-center gap-2.5">
+      <div className="flex flex-wrap items-center justify-center md:justify-end gap-2.5">
         <button
           onClick={onMarkAllToday}
           disabled={isActionLoading}

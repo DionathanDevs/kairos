@@ -16,7 +16,7 @@ export const WeeklyChart: React.FC<WeeklyChartProps> = ({ dailySummary, lang }) 
 
   return (
     <div className="bg-dark-card border border-dark-border/80 rounded-2xl p-4 sm:p-6 mb-6 shadow-xl">
-      <h3 className="text-xs font-semibold text-gray-400 tracking-wider uppercase mb-6">
+      <h3 className="text-xs font-semibold text-gray-400 tracking-wider uppercase mb-6 text-center sm:text-left">
         {t.dailyPerformance}
       </h3>
 
