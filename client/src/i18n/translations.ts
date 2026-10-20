@@ -1,6 +1,6 @@
 export const translations = {
   pt: {
-    appTitle: 'Monitor de Hábitos',
+    appTitle: 'Kairos',
     appSubtitle: 'Acompanhamento diário e consistência semanal',
     markAllToday: 'Marcar Tudo Hoje',
     resetWeek: 'Resetar Semana',
@@ -50,7 +50,7 @@ export const translations = {
     }
   },
   en: {
-    appTitle: 'Habit Tracker',
+    appTitle: 'Kairos',
     appSubtitle: 'Daily tracking and weekly consistency',
     markAllToday: 'Mark All Today',
     resetWeek: 'Reset Week',
