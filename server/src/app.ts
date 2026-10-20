@@ -1,5 +1,7 @@
-import express, { Express } from 'express';
-import cors from 'cors';
+import Fastify, { type FastifyInstance } from 'fastify';
+import cors from '@fastify/cors';
+import fastifyStatic from '@fastify/static';
+import type { Schema } from 'fast-json-stringify';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -20,8 +22,10 @@ import { ToggleHabitLogUseCase } from './application/usecases/ToggleHabitLogUseC
 import { MarkAllTodayUseCase } from './application/usecases/MarkAllTodayUseCase.js';
 import { ResetWeekUseCase } from './application/usecases/ResetWeekUseCase.js';
 
+import { DomainError, ValidationError, NotFoundError } from './domain/errors/DomainError.js';
 import { HabitController } from './presentation/controllers/HabitController.js';
 import { createHabitRouter } from './presentation/routes/habitRoutes.js';
+import { routeSchemas, serializers } from './presentation/schemas/habitSchemas.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,7 +35,7 @@ export interface CreateAppOptions {
   runMigrations?: boolean;
 }
 
-export function createApp(options: CreateAppOptions = {}): { app: Express; db: DatabaseSync } {
+export function createApp(options: CreateAppOptions = {}): { app: FastifyInstance; db: DatabaseSync } {
   const db = options.db || getDatabase();
 
   if (options.runMigrations !== false) {
@@ -67,25 +71,64 @@ export function createApp(options: CreateAppOptions = {}): { app: Express; db: D
     resetWeekUseCase
   );
 
-  // Express App
-  const app = express();
-  app.use(cors());
-  app.use(express.json());
+  // Fastify App
+  const app = Fastify({ logger: false });
 
-  // API Routes
-  app.use('/api/habits', createHabitRouter(habitController));
+  // Configure explicit fast-json-stringify serializer compiler
+  app.setSerializerCompiler(({ schema }) => {
+    return serializers.compile(schema as Schema);
+  });
+
+  // Centralized Error Handler using fast-json-stringify
+  app.setErrorHandler((err: unknown, _req, reply) => {
+    reply.type('application/json; charset=utf-8');
+
+    if (err instanceof ValidationError) {
+      return reply.code(400).serializer(serializers.error).send({ error: err.message });
+    }
+    if (err instanceof NotFoundError) {
+      return reply.code(404).serializer(serializers.error).send({ error: err.message });
+    }
+    if (err instanceof DomainError) {
+      return reply.code(422).serializer(serializers.error).send({ error: err.message });
+    }
+    if (typeof err === 'object' && err !== null && 'validation' in err) {
+      const message = (err as { message?: string }).message || 'Dados de requisição inválidos.';
+      return reply.code(400).serializer(serializers.error).send({ error: message });
+    }
+
+    console.error('[Fastify] Unexpected error:', err);
+    const message = (err as { message?: string })?.message || 'Erro interno do servidor.';
+    return reply.code(500).serializer(serializers.error).send({ error: message });
+  });
+
+  app.register(cors);
 
   // Health
-  app.get('/api/health', (_req, res) => {
-    res.json({ status: 'ok', time: new Date().toISOString() });
+  app.get('/api/health', { schema: routeSchemas.health }, async () => {
+    return { status: 'ok', time: new Date().toISOString() };
   });
+
+  // API Routes
+  app.register(createHabitRouter(habitController), { prefix: '/api/habits' });
 
   // Serve frontend static files if built
   const clientDistPath = process.env.CLIENT_DIST_PATH || path.resolve(__dirname, '../../client/dist');
   if (fs.existsSync(clientDistPath)) {
-    app.use(express.static(clientDistPath));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(clientDistPath, 'index.html'));
+    app.register(fastifyStatic, {
+      root: clientDistPath,
+      wildcard: false
+    });
+
+    app.setNotFoundHandler((req, reply) => {
+      if (req.url.startsWith('/api')) {
+        return reply
+          .code(404)
+          .type('application/json; charset=utf-8')
+          .serializer(serializers.error)
+          .send({ error: 'Rota não encontrada.' });
+      }
+      return reply.sendFile('index.html');
     });
   }
 

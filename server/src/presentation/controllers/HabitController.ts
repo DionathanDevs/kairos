@@ -1,5 +1,5 @@
-import type { Request, Response } from 'express';
-import { DomainError, ValidationError, NotFoundError } from '../../domain/errors/DomainError.js';
+import type { FastifyRequest, FastifyReply } from 'fastify';
+import { ValidationError } from '../../domain/errors/DomainError.js';
 import type { CreateHabitUseCase } from '../../application/usecases/CreateHabitUseCase.js';
 import type { UpdateHabitUseCase } from '../../application/usecases/UpdateHabitUseCase.js';
 import type { DeleteHabitUseCase } from '../../application/usecases/DeleteHabitUseCase.js';
@@ -23,112 +23,79 @@ export class HabitController {
     private resetWeekUseCase: ResetWeekUseCase
   ) {}
 
-  public getHabits = (_req: Request, res: Response): void => {
-    try {
-      const data = this.getHabitsWithWeekUseCase.execute();
-      res.json(data);
-    } catch (err) {
-      this.handleError(err, res);
-    }
+  public getHabits = async (_req: FastifyRequest, reply: FastifyReply) => {
+    const data = this.getHabitsWithWeekUseCase.execute();
+    return reply.send(data);
   };
 
-  public getStats = (_req: Request, res: Response): void => {
-    try {
-      const data = this.getDashboardStatsUseCase.execute();
-      res.json(data);
-    } catch (err) {
-      this.handleError(err, res);
-    }
+  public getStats = async (_req: FastifyRequest, reply: FastifyReply) => {
+    const data = this.getDashboardStatsUseCase.execute();
+    return reply.send(data);
   };
 
-  public getHeatmap = (req: Request, res: Response): void => {
-    try {
-      const weeks = req.query.weeks ? parseInt(req.query.weeks as string, 10) : 20;
-      const data = this.getHeatmapUseCase.execute(weeks);
-      res.json(data);
-    } catch (err) {
-      this.handleError(err, res);
-    }
+  public getHeatmap = async (
+    req: FastifyRequest<{ Querystring: { weeks?: string } }>,
+    reply: FastifyReply
+  ) => {
+    const weeks = req.query?.weeks ? parseInt(req.query.weeks, 10) : 20;
+    const data = this.getHeatmapUseCase.execute(weeks);
+    return reply.send(data);
   };
 
-  public create = (req: Request, res: Response): void => {
-    try {
-      const { title, description, color } = req.body;
-      const habit = this.createHabitUseCase.execute({ title, description, color });
-      res.status(201).json(habit);
-    } catch (err) {
-      this.handleError(err, res);
-    }
+  public create = async (
+    req: FastifyRequest<{ Body: { title?: string; description?: string; color?: string } }>,
+    reply: FastifyReply
+  ) => {
+    const { title = '', description, color } = req.body || {};
+    const habit = this.createHabitUseCase.execute({ title, description, color });
+    return reply.code(201).send(habit);
   };
 
-  public update = (req: Request, res: Response): void => {
-    try {
-      const id = req.params.id as string;
-      const { title, description, color } = req.body;
-      const habit = this.updateHabitUseCase.execute({ id, title, description, color });
-      res.json(habit);
-    } catch (err) {
-      this.handleError(err, res);
-    }
+  public update = async (
+    req: FastifyRequest<{
+      Params: { id: string };
+      Body: { title?: string; description?: string; color?: string };
+    }>,
+    reply: FastifyReply
+  ) => {
+    const { id } = req.params;
+    const { title = '', description, color } = req.body || {};
+    const habit = this.updateHabitUseCase.execute({ id, title, description, color });
+    return reply.send(habit);
   };
 
-  public delete = (req: Request, res: Response): void => {
-    try {
-      const id = req.params.id as string;
-      const success = this.deleteHabitUseCase.execute(id);
-      res.json({ success });
-    } catch (err) {
-      this.handleError(err, res);
-    }
+  public delete = async (
+    req: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply
+  ) => {
+    const { id } = req.params;
+    const success = this.deleteHabitUseCase.execute(id);
+    return reply.send({ success });
   };
 
-  public toggle = (req: Request, res: Response): void => {
-    try {
-      const id = req.params.id as string;
-      const { date } = req.body;
-      if (!date) {
-        res.status(400).json({ error: 'A data é obrigatória para alternar o status do hábito.' });
-        return;
-      }
-      const result = this.toggleHabitLogUseCase.execute({ habitId: id, date });
-      res.json(result);
-    } catch (err) {
-      this.handleError(err, res);
+  public toggle = async (
+    req: FastifyRequest<{
+      Params: { id: string };
+      Body: { date?: string };
+    }>,
+    reply: FastifyReply
+  ) => {
+    const { id } = req.params;
+    const { date } = req.body || {};
+    if (!date) {
+      throw new ValidationError('A data é obrigatória para alternar o status do hábito.');
     }
+    const result = this.toggleHabitLogUseCase.execute({ habitId: id, date });
+    return reply.send(result);
   };
 
-  public markAllToday = (_req: Request, res: Response): void => {
-    try {
-      const result = this.markAllTodayUseCase.execute();
-      res.json(result);
-    } catch (err) {
-      this.handleError(err, res);
-    }
+  public markAllToday = async (_req: FastifyRequest, reply: FastifyReply) => {
+    const result = this.markAllTodayUseCase.execute();
+    return reply.send(result);
   };
 
-  public resetWeek = (_req: Request, res: Response): void => {
-    try {
-      const result = this.resetWeekUseCase.execute();
-      res.json(result);
-    } catch (err) {
-      this.handleError(err, res);
-    }
+  public resetWeek = async (_req: FastifyRequest, reply: FastifyReply) => {
+    const result = this.resetWeekUseCase.execute();
+    return reply.send(result);
   };
-
-  private handleError(err: unknown, res: Response): void {
-    if (err instanceof ValidationError) {
-      res.status(400).json({ error: err.message });
-      return;
-    }
-    if (err instanceof NotFoundError) {
-      res.status(404).json({ error: err.message });
-      return;
-    }
-    if (err instanceof DomainError) {
-      res.status(422).json({ error: err.message });
-      return;
-    }
-    console.error('[HabitController] Unexpected error:', err);
-    res.status(500).json({ error: (err as any)?.message || 'Erro interno do servidor.' });
-  }
 }
