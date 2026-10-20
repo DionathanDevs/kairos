@@ -64,24 +64,36 @@ input, textarea, [contenteditable="true"] {
   }
 }
 
-/* Custom subtle scrollbar for mobile horizontal scrolling */
-::-webkit-scrollbar {
-  height: 6px;
-  width: 6px;
+/* Custom subtle scrollbar for desktop */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #15181e;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2a303e;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3b4252;
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: #15181e;
-  border-radius: 9999px;
+/* Hide scrollbar utility for clean mobile scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #2a303e;
-  border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #3b4252;
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Pulse keyframes for glowing effects */

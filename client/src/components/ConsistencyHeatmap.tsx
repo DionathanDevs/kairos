@@ -116,10 +116,10 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ data, la
         </div>
       </div>
 
-      {/* Heatmap Grid (Scrollable on small mobile) */}
+      {/* Heatmap Grid (Scrollable on small mobile without visible scrollbar) */}
       <div
         ref={scrollContainerRef}
-        className="overflow-x-auto scrollbar-thin pb-2 pt-2 relative z-10"
+        className="overflow-x-auto no-scrollbar pb-2 pt-2 relative z-10"
       >
         <div className="w-max inline-block">
           {/* Month labels row */}

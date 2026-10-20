@@ -37,7 +37,7 @@ export const HabitGrid: React.FC<HabitGridProps> = ({
         </div>
       ) : showAllDays ? (
         /* Expanded Mode: Full 7-day week matrix with horizontal scroll */
-        <div className="overflow-x-auto scrollbar-thin">
+        <div className="overflow-x-auto no-scrollbar">
           <div className="min-w-[580px] sm:min-w-[660px]">
             {/* Header Row */}
             <div className="grid grid-cols-12 items-center pb-4 mb-2 border-b border-dark-border/60 text-xs font-semibold text-gray-400 tracking-wider uppercase">
