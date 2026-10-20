@@ -68,24 +68,22 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ data, la
     t.dayLabels.Dom  // Sun (6)
   ];
 
-  // Automatically center the overflow completely in the middle
+  // Automatically scroll to the end so current week is flush on the right in mobile
   useEffect(() => {
-    const centerOverflow = () => {
+    const scrollToEnd = () => {
       if (scrollContainerRef.current) {
         const container = scrollContainerRef.current;
-        if (container.scrollWidth > container.clientWidth) {
-          container.scrollLeft = Math.round((container.scrollWidth - container.clientWidth) / 2);
-        }
+        container.scrollLeft = container.scrollWidth - container.clientWidth;
       }
     };
 
-    centerOverflow();
-    const timer = setTimeout(centerOverflow, 60);
+    scrollToEnd();
+    const timer = setTimeout(scrollToEnd, 80);
 
-    window.addEventListener('resize', centerOverflow);
+    window.addEventListener('resize', scrollToEnd);
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('resize', centerOverflow);
+      window.removeEventListener('resize', scrollToEnd);
     };
   }, [data]);
 
@@ -93,21 +91,21 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ data, la
     <div className="bg-dark-card border border-dark-border/80 rounded-2xl p-4 sm:p-6 mb-6 shadow-xl relative overflow-hidden">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 relative z-10">
-        <div>
-          <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 relative z-10 text-center sm:text-left">
+        <div className="flex flex-col items-center sm:items-start">
+          <div className="flex items-center justify-center sm:justify-start gap-2">
             <h3 className="text-xs font-semibold text-gray-300 tracking-wider uppercase flex items-center gap-1.5">
               <Flame className="w-3.5 h-3.5 text-brand-green" />
               <span>{t.consistencyTracking}</span>
             </h3>
           </div>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-400 mt-0.5 text-center sm:text-left">
             {t.consistencyHistorySub}
           </p>
         </div>
 
         {/* Motivational Stats Badges */}
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center justify-center sm:justify-end gap-2 text-xs">
           <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-dark-bg/90 border border-dark-border text-gray-300 font-medium shadow-inner">
             <Sparkles className="w-3.5 h-3.5 text-brand-green" />
             <strong className="text-brand-green font-bold">{data.totalActiveDays}</strong> {t.activeDays}
@@ -123,7 +121,7 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ data, la
         ref={scrollContainerRef}
         className="overflow-x-auto scrollbar-thin pb-2 pt-2 relative z-10"
       >
-        <div className="min-w-[620px] inline-block">
+        <div className="w-max inline-block">
           {/* Month labels row */}
           <div className="flex pl-9 mb-1.5 text-[11px] font-medium text-gray-400 select-none">
             {data.weeks.map((_, idx) => {
@@ -191,7 +189,7 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({ data, la
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-end gap-1.5 mt-4 pt-3 border-t border-dark-border/40 text-[11px] text-gray-400 relative z-10">
+      <div className="flex items-center justify-center sm:justify-end gap-1.5 mt-4 pt-3 border-t border-dark-border/40 text-[11px] text-gray-400 relative z-10">
         <span>{t.less}</span>
         <div className="w-3 h-3 rounded-[2px] bg-[#181b22] border border-[#232732]" />
         <div className="w-3 h-3 rounded-[2px] bg-[#064e3b]" />
