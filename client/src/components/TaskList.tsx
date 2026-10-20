@@ -72,7 +72,7 @@ export const TaskList: React.FC<TaskListProps> = ({
   return (
     <div className="bg-dark-card border border-dark-border/80 rounded-2xl p-4 sm:p-6 mb-6 shadow-xl">
       {/* Category Switcher (Pessoais | Trabalho) */}
-      <div className="flex items-center justify-between gap-2 pb-4 mb-4 border-b border-dark-border/60">
+      <div className="flex items-center justify-center gap-2 pb-4 mb-4 border-b border-dark-border/60">
         <div className="grid grid-cols-2 w-full sm:w-auto sm:inline-grid bg-dark-bg p-1 rounded-xl border border-dark-border">
           <button
             type="button"
