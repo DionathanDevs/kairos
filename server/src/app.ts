@@ -74,39 +74,43 @@ export function createApp(options: CreateAppOptions = {}): { app: FastifyInstanc
   // Fastify App
   const app = Fastify({ logger: false });
 
-  // Configure explicit fast-json-stringify serializer compiler
+  // Reuse pre-compiled fast-json-stringify functions via WeakMap cache
   app.setSerializerCompiler(({ schema }) => {
     return serializers.compile(schema as Schema);
   });
 
-  // Centralized Error Handler using fast-json-stringify
+  // Centralized Error Handler sending pre-serialized JSON string directly
   app.setErrorHandler((err: unknown, _req, reply) => {
     reply.type('application/json; charset=utf-8');
 
     if (err instanceof ValidationError) {
-      return reply.code(400).serializer(serializers.error).send({ error: err.message });
+      reply.code(400).send(serializers.error({ error: err.message }));
+      return;
     }
     if (err instanceof NotFoundError) {
-      return reply.code(404).serializer(serializers.error).send({ error: err.message });
+      reply.code(404).send(serializers.error({ error: err.message }));
+      return;
     }
     if (err instanceof DomainError) {
-      return reply.code(422).serializer(serializers.error).send({ error: err.message });
+      reply.code(422).send(serializers.error({ error: err.message }));
+      return;
     }
     if (typeof err === 'object' && err !== null && 'validation' in err) {
       const message = (err as { message?: string }).message || 'Dados de requisição inválidos.';
-      return reply.code(400).serializer(serializers.error).send({ error: message });
+      reply.code(400).send(serializers.error({ error: message }));
+      return;
     }
 
     console.error('[Fastify] Unexpected error:', err);
     const message = (err as { message?: string })?.message || 'Erro interno do servidor.';
-    return reply.code(500).serializer(serializers.error).send({ error: message });
+    reply.code(500).send(serializers.error({ error: message }));
   });
 
   app.register(cors);
 
-  // Health
-  app.get('/api/health', { schema: routeSchemas.health }, async () => {
-    return { status: 'ok', time: new Date().toISOString() };
+  // Health (synchronous handler)
+  app.get('/api/health', { schema: routeSchemas.health }, (_req, reply) => {
+    reply.send({ status: 'ok', time: new Date().toISOString() });
   });
 
   // API Routes
@@ -122,11 +126,11 @@ export function createApp(options: CreateAppOptions = {}): { app: FastifyInstanc
 
     app.setNotFoundHandler((req, reply) => {
       if (req.url.startsWith('/api')) {
-        return reply
+        reply
           .code(404)
           .type('application/json; charset=utf-8')
-          .serializer(serializers.error)
-          .send({ error: 'Rota não encontrada.' });
+          .send(serializers.error({ error: 'Rota não encontrada.' }));
+        return;
       }
       return reply.sendFile('index.html');
     });

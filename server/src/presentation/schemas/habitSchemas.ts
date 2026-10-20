@@ -1,6 +1,7 @@
 import fastJsonStringify, { type Schema } from 'fast-json-stringify';
 
 export const errorResponseSchema: Schema = {
+  $id: 'errorResponse',
   type: 'object',
   properties: {
     error: { type: 'string' }
@@ -9,6 +10,7 @@ export const errorResponseSchema: Schema = {
 };
 
 export const healthResponseSchema: Schema = {
+  $id: 'healthResponse',
   type: 'object',
   properties: {
     status: { type: 'string' },
@@ -18,6 +20,7 @@ export const healthResponseSchema: Schema = {
 };
 
 export const habitItemSchema: Schema = {
+  $id: 'habitItem',
   type: 'object',
   properties: {
     id: { type: 'string' },
@@ -79,6 +82,7 @@ export const habitWithWeekLogsSchema: Schema = {
 };
 
 export const habitsWithWeekResponseSchema: Schema = {
+  $id: 'habitsWithWeekResponse',
   type: 'object',
   properties: {
     habits: {
@@ -107,6 +111,7 @@ export const dailySummarySchema: Schema = {
 };
 
 export const dashboardStatsResponseSchema: Schema = {
+  $id: 'dashboardStatsResponse',
   type: 'object',
   properties: {
     perfectStreakDays: { type: 'integer' },
@@ -141,6 +146,7 @@ export const heatmapDaySchema: Schema = {
 };
 
 export const heatmapResponseSchema: Schema = {
+  $id: 'heatmapResponse',
   type: 'object',
   properties: {
     weeks: {
@@ -157,6 +163,7 @@ export const heatmapResponseSchema: Schema = {
 };
 
 export const deleteHabitResponseSchema: Schema = {
+  $id: 'deleteHabitResponse',
   type: 'object',
   properties: {
     success: { type: 'boolean' }
@@ -165,6 +172,7 @@ export const deleteHabitResponseSchema: Schema = {
 };
 
 export const toggleHabitResponseSchema: Schema = {
+  $id: 'toggleHabitResponse',
   type: 'object',
   properties: {
     completed: { type: 'boolean' }
@@ -173,6 +181,7 @@ export const toggleHabitResponseSchema: Schema = {
 };
 
 export const markAllTodayResponseSchema: Schema = {
+  $id: 'markAllTodayResponse',
   type: 'object',
   properties: {
     updatedCount: { type: 'integer' }
@@ -181,6 +190,7 @@ export const markAllTodayResponseSchema: Schema = {
 };
 
 export const resetWeekResponseSchema: Schema = {
+  $id: 'resetWeekResponse',
   type: 'object',
   properties: {
     resetCount: { type: 'integer' }
@@ -188,139 +198,80 @@ export const resetWeekResponseSchema: Schema = {
   required: ['resetCount']
 };
 
-export const commonErrorResponses = {
-  400: errorResponseSchema,
-  404: errorResponseSchema,
-  422: errorResponseSchema,
-  500: errorResponseSchema
-};
+/**
+ * Cache por $id e por referência de objeto para garantir compilação única
+ * e liberar a instância interna do Ajv do escopo da closure.
+ */
+const compilerByIdCache = new Map<string, (doc: any) => string>();
+const compilerByRefCache = new WeakMap<Schema, (doc: any) => string>();
+
+function compileCached(schema: Schema): (doc: any) => string {
+  const schemaId = (schema as { $id?: string }).$id;
+  if (schemaId) {
+    const cachedById = compilerByIdCache.get(schemaId);
+    if (cachedById) return cachedById;
+  }
+
+  const cachedByRef = compilerByRefCache.get(schema);
+  if (cachedByRef) return cachedByRef;
+
+  const debugCompiled = fastJsonStringify(schema, { mode: 'debug' as any }) as unknown as {
+    serializer: unknown;
+    code: string;
+  };
+  const fnBody = debugCompiled.code.replace(/^validator\nserializer\n/, '');
+  const fn = new Function('serializer', fnBody)(debugCompiled.serializer) as (doc: any) => string;
+
+  if (schemaId) {
+    compilerByIdCache.set(schemaId, fn);
+  }
+  compilerByRefCache.set(schema, fn);
+  return fn;
+}
 
 export const routeSchemas = {
   health: {
-    response: {
-      200: healthResponseSchema,
-      ...commonErrorResponses
-    }
+    response: { 200: healthResponseSchema }
   },
   getHabits: {
-    response: {
-      200: habitsWithWeekResponseSchema,
-      ...commonErrorResponses
-    }
+    response: { 200: habitsWithWeekResponseSchema }
   },
   getStats: {
-    response: {
-      200: dashboardStatsResponseSchema,
-      ...commonErrorResponses
-    }
+    response: { 200: dashboardStatsResponseSchema }
   },
   getHeatmap: {
-    querystring: {
-      type: 'object',
-      properties: {
-        weeks: { type: 'string' }
-      }
-    },
-    response: {
-      200: heatmapResponseSchema,
-      ...commonErrorResponses
-    }
+    response: { 200: heatmapResponseSchema }
   },
   createHabit: {
-    body: {
-      type: 'object',
-      properties: {
-        title: { type: 'string' },
-        description: { type: 'string' },
-        color: { type: 'string' }
-      }
-    },
-    response: {
-      201: habitItemSchema,
-      ...commonErrorResponses
-    }
+    response: { 201: habitItemSchema }
   },
   updateHabit: {
-    params: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' }
-      },
-      required: ['id']
-    },
-    body: {
-      type: 'object',
-      properties: {
-        title: { type: 'string' },
-        description: { type: 'string' },
-        color: { type: 'string' }
-      }
-    },
-    response: {
-      200: habitItemSchema,
-      ...commonErrorResponses
-    }
+    response: { 200: habitItemSchema }
   },
   deleteHabit: {
-    params: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' }
-      },
-      required: ['id']
-    },
-    response: {
-      200: deleteHabitResponseSchema,
-      ...commonErrorResponses
-    }
+    response: { 200: deleteHabitResponseSchema }
   },
   toggleHabit: {
-    params: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' }
-      },
-      required: ['id']
-    },
-    body: {
-      type: 'object',
-      properties: {
-        date: { type: 'string' }
-      }
-    },
-    response: {
-      200: toggleHabitResponseSchema,
-      ...commonErrorResponses
-    }
+    response: { 200: toggleHabitResponseSchema }
   },
   markAllToday: {
-    response: {
-      200: markAllTodayResponseSchema,
-      ...commonErrorResponses
-    }
+    response: { 200: markAllTodayResponseSchema }
   },
   resetWeek: {
-    response: {
-      200: resetWeekResponseSchema,
-      ...commonErrorResponses
-    }
+    response: { 200: resetWeekResponseSchema }
   }
 };
 
-/**
- * Compiladores pre-construídos via fast-json-stringify
- * para serialização direta sem JSON.stringify.
- */
 export const serializers = {
-  compile: (schema: Schema) => fastJsonStringify(schema),
-  error: fastJsonStringify(errorResponseSchema),
-  health: fastJsonStringify(healthResponseSchema),
-  habitItem: fastJsonStringify(habitItemSchema),
-  habitsWithWeek: fastJsonStringify(habitsWithWeekResponseSchema),
-  dashboardStats: fastJsonStringify(dashboardStatsResponseSchema),
-  heatmap: fastJsonStringify(heatmapResponseSchema),
-  deleteHabit: fastJsonStringify(deleteHabitResponseSchema),
-  toggleHabit: fastJsonStringify(toggleHabitResponseSchema),
-  markAllToday: fastJsonStringify(markAllTodayResponseSchema),
-  resetWeek: fastJsonStringify(resetWeekResponseSchema)
+  compile: compileCached,
+  error: compileCached(errorResponseSchema),
+  health: compileCached(healthResponseSchema),
+  habitItem: compileCached(habitItemSchema),
+  habitsWithWeek: compileCached(habitsWithWeekResponseSchema),
+  dashboardStats: compileCached(dashboardStatsResponseSchema),
+  heatmap: compileCached(heatmapResponseSchema),
+  deleteHabit: compileCached(deleteHabitResponseSchema),
+  toggleHabit: compileCached(toggleHabitResponseSchema),
+  markAllToday: compileCached(markAllTodayResponseSchema),
+  resetWeek: compileCached(resetWeekResponseSchema)
 };

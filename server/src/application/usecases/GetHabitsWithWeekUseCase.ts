@@ -9,23 +9,50 @@ export class GetHabitsWithWeekUseCase {
     private habitLogRepo: IHabitLogRepository
   ) {}
 
-  public execute(referenceDate: Date = new Date()): { habits: HabitWithWeekLogsDTO[]; weekDays: { name: 'Seg' | 'Ter' | 'Qua' | 'Qui' | 'Sex' | 'Sáb' | 'Dom'; date: string; isToday: boolean }[] } {
+  public execute(referenceDate: Date = new Date()): {
+    habits: HabitWithWeekLogsDTO[];
+    weekDays: { name: 'Seg' | 'Ter' | 'Qua' | 'Qui' | 'Sex' | 'Sáb' | 'Dom'; date: string; isToday: boolean }[];
+  } {
     const weekDays = DateRangeService.getCurrentWeekDates(referenceDate);
     const habits = this.habitRepo.findAll();
+
+    if (habits.length === 0) {
+      return { habits: [], weekDays };
+    }
 
     const startDate = weekDays[0].date;
     const endDate = weekDays[6].date;
 
+    // Fetch all logs for the week in a single query when supported
+    let logsByHabit: Map<string, Map<string, boolean>> | null = null;
+    if (this.habitLogRepo.findAllByDateRange) {
+      logsByHabit = new Map<string, Map<string, boolean>>();
+      const allWeekLogs = this.habitLogRepo.findAllByDateRange(startDate, endDate);
+      for (const l of allWeekLogs) {
+        let dateMap = logsByHabit.get(l.habitId);
+        if (!dateMap) {
+          dateMap = new Map<string, boolean>();
+          logsByHabit.set(l.habitId, dateMap);
+        }
+        dateMap.set(l.date, l.completed);
+      }
+    }
+
     const habitDTOs: HabitWithWeekLogsDTO[] = habits.map((habit) => {
-      const logs = this.habitLogRepo.findByHabitAndDateRange(habit.id, startDate, endDate);
-      const logMap = new Map<string, boolean>();
-      for (const l of logs) {
-        logMap.set(l.date, l.completed);
+      let logMap: Map<string, boolean> | undefined;
+      if (logsByHabit) {
+        logMap = logsByHabit.get(habit.id);
+      } else {
+        const logs = this.habitLogRepo.findByHabitAndDateRange(habit.id, startDate, endDate);
+        logMap = new Map<string, boolean>();
+        for (const l of logs) {
+          logMap.set(l.date, l.completed);
+        }
       }
 
       let weekCompletedCount = 0;
       const days: DayStatusDTO[] = weekDays.map((wd) => {
-        const completed = logMap.get(wd.date) === true;
+        const completed = logMap?.get(wd.date) === true;
         if (completed) weekCompletedCount++;
         return {
           dayName: wd.name,

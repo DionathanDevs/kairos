@@ -23,79 +23,79 @@ export class HabitController {
     private resetWeekUseCase: ResetWeekUseCase
   ) {}
 
-  public getHabits = async (_req: FastifyRequest, reply: FastifyReply) => {
+  public getHabits = (_req: FastifyRequest, reply: FastifyReply): void => {
     const data = this.getHabitsWithWeekUseCase.execute();
-    return reply.send(data);
+    reply.send(data);
   };
 
-  public getStats = async (_req: FastifyRequest, reply: FastifyReply) => {
+  public getStats = (_req: FastifyRequest, reply: FastifyReply): void => {
     const data = this.getDashboardStatsUseCase.execute();
-    return reply.send(data);
+    reply.send(data);
   };
 
-  public getHeatmap = async (
+  public getHeatmap = (
     req: FastifyRequest<{ Querystring: { weeks?: string } }>,
     reply: FastifyReply
-  ) => {
+  ): void => {
     const weeks = req.query?.weeks ? parseInt(req.query.weeks, 10) : 20;
     const data = this.getHeatmapUseCase.execute(weeks);
-    return reply.send(data);
+    reply.send(data);
   };
 
-  public create = async (
+  public create = (
     req: FastifyRequest<{ Body: { title?: string; description?: string; color?: string } }>,
     reply: FastifyReply
-  ) => {
+  ): void => {
     const { title = '', description, color } = req.body || {};
     const habit = this.createHabitUseCase.execute({ title, description, color });
-    return reply.code(201).send(habit);
+    reply.code(201).send(habit);
   };
 
-  public update = async (
+  public update = (
     req: FastifyRequest<{
       Params: { id: string };
       Body: { title?: string; description?: string; color?: string };
     }>,
     reply: FastifyReply
-  ) => {
+  ): void => {
     const { id } = req.params;
     const { title = '', description, color } = req.body || {};
     const habit = this.updateHabitUseCase.execute({ id, title, description, color });
-    return reply.send(habit);
+    reply.send(habit);
   };
 
-  public delete = async (
+  public delete = (
     req: FastifyRequest<{ Params: { id: string } }>,
     reply: FastifyReply
-  ) => {
+  ): void => {
     const { id } = req.params;
     const success = this.deleteHabitUseCase.execute(id);
-    return reply.send({ success });
+    reply.send({ success });
   };
 
-  public toggle = async (
+  public toggle = (
     req: FastifyRequest<{
       Params: { id: string };
       Body: { date?: string };
     }>,
     reply: FastifyReply
-  ) => {
+  ): void => {
     const { id } = req.params;
     const { date } = req.body || {};
     if (!date) {
       throw new ValidationError('A data é obrigatória para alternar o status do hábito.');
     }
     const result = this.toggleHabitLogUseCase.execute({ habitId: id, date });
-    return reply.send(result);
+    reply.send(result);
   };
 
-  public markAllToday = async (_req: FastifyRequest, reply: FastifyReply) => {
+  public markAllToday = (_req: FastifyRequest, reply: FastifyReply): void => {
     const result = this.markAllTodayUseCase.execute();
-    return reply.send(result);
+    reply.send(result);
   };
 
-  public resetWeek = async (_req: FastifyRequest, reply: FastifyReply) => {
+  public resetWeek = (_req: FastifyRequest, reply: FastifyReply): void => {
     const result = this.resetWeekUseCase.execute();
-    return reply.send(result);
+    reply.send(result);
   };
 }
