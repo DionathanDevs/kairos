@@ -51,3 +51,19 @@ export interface HeatmapData {
 }
 
 export type Language = 'pt' | 'en';
+
+export type AppTab = 'habits' | 'tasks';
+export type TaskPriority = 'high' | 'medium' | 'low';
+export type TaskCategory = 'personal' | 'work';
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  category: TaskCategory;
+  completed: boolean;
+  order_index: number;
+  created_at: string;
+}
+

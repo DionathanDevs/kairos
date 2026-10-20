@@ -47,6 +47,51 @@ export const translations = {
       confirmDelete: 'Deseja realmente excluir este hábito e seu histórico?',
       confirmReset: 'Deseja realmente desmarcar todos os hábitos da semana atual?',
       markAllSuccess: 'Todos os hábitos de hoje foram marcados como concluídos!'
+    },
+    nav: {
+      habits: 'Hábitos',
+      tasks: 'Tarefas',
+      quickAddHabit: 'Novo Hábito',
+      quickAddTask: 'Nova Tarefa'
+    },
+    tasks: {
+      subtitle: 'Organização de tarefas pessoais e do trabalho por prioridade',
+      completeAll: 'Concluir Todas',
+      clearCompleted: 'Limpar Concluídas',
+      newTask: 'Nova Tarefa',
+      personalTab: 'Pessoais',
+      workTab: 'Trabalho',
+      taskAndPriorityHeader: 'TAREFA & PRIORIDADE',
+      statusHeader: 'STATUS',
+      emptyPersonal: 'Nenhuma tarefa pessoal cadastrada. Clique em "Nova Tarefa" para começar!',
+      emptyWork: 'Nenhuma tarefa de trabalho cadastrada. Clique em "Nova Tarefa" para começar!',
+      showMore: 'Mostrar mais',
+      priorities: {
+        high: 'Alta',
+        medium: 'Média',
+        low: 'Baixa'
+      },
+      categories: {
+        personal: 'Pessoal',
+        work: 'Trabalho'
+      },
+      modal: {
+        createTitle: 'Nova Tarefa',
+        editTitle: 'Editar Tarefa',
+        titleLabel: 'Nome da Tarefa',
+        titlePlaceholder: 'ex: Preparar relatório, Comprar mantimentos...',
+        descLabel: 'Descrição / Observação',
+        descPlaceholder: 'ex: Entregar até sexta-feira às 17h',
+        categoryLabel: 'Contexto da Tarefa',
+        priorityLabel: 'Tag de Prioridade',
+        save: 'Salvar Tarefa',
+        cancel: 'Cancelar',
+        delete: 'Excluir',
+        confirmClearTitle: 'Limpar Tarefas Concluídas',
+        confirmClearMsg: 'Deseja realmente remover todas as tarefas concluídas desta aba?',
+        completeAllSuccess: 'Todas as tarefas desta aba foram concluídas!',
+        clearCompletedSuccess: 'Tarefas concluídas removidas com sucesso!'
+      }
     }
   },
   en: {
@@ -97,6 +142,52 @@ export const translations = {
       confirmDelete: 'Are you sure you want to delete this habit and its history?',
       confirmReset: 'Are you sure you want to reset all habits for this current week?',
       markAllSuccess: 'All habits for today have been marked as completed!'
+    },
+    nav: {
+      habits: 'Habits',
+      tasks: 'Tasks',
+      quickAddHabit: 'New Habit',
+      quickAddTask: 'New Task'
+    },
+    tasks: {
+      subtitle: 'Personal and work task organization by priority',
+      completeAll: 'Complete All',
+      clearCompleted: 'Clear Completed',
+      newTask: 'New Task',
+      personalTab: 'Personal',
+      workTab: 'Work',
+      taskAndPriorityHeader: 'TASK & PRIORITY',
+      statusHeader: 'STATUS',
+      emptyPersonal: 'No personal tasks yet. Click "New Task" to get started!',
+      emptyWork: 'No work tasks yet. Click "New Task" to get started!',
+      showMore: 'Show more',
+      priorities: {
+        high: 'High',
+        medium: 'Medium',
+        low: 'Low'
+      },
+      categories: {
+        personal: 'Personal',
+        work: 'Work'
+      },
+      modal: {
+        createTitle: 'New Task',
+        editTitle: 'Edit Task',
+        titleLabel: 'Task Name',
+        titlePlaceholder: 'e.g. Prepare report, Buy groceries...',
+        descLabel: 'Description / Notes',
+        descPlaceholder: 'e.g. Deliver by Friday at 5 PM',
+        categoryLabel: 'Task Context',
+        priorityLabel: 'Priority Tag',
+        save: 'Save Task',
+        cancel: 'Cancel',
+        delete: 'Delete',
+        confirmClearTitle: 'Clear Completed Tasks',
+        confirmClearMsg: 'Are you sure you want to remove all completed tasks in this tab?',
+        completeAllSuccess: 'All tasks in this tab have been marked as completed!',
+        clearCompletedSuccess: 'Completed tasks removed successfully!'
+      }
     }
   }
 };
+

@@ -9,6 +9,7 @@ import { getDatabase } from './infrastructure/database/DatabaseConnection.js';
 import { MigrationRunner } from './infrastructure/database/migrations/MigrationRunner.js';
 import { SQLiteHabitRepository } from './infrastructure/database/repositories/SQLiteHabitRepository.js';
 import { SQLiteHabitLogRepository } from './infrastructure/database/repositories/SQLiteHabitLogRepository.js';
+import { SQLiteTaskRepository } from './infrastructure/database/repositories/SQLiteTaskRepository.js';
 
 import { GetHabitsWithWeekUseCase } from './application/usecases/GetHabitsWithWeekUseCase.js';
 import { GetDashboardStatsUseCase } from './application/usecases/GetDashboardStatsUseCase.js';
@@ -19,9 +20,20 @@ import { DeleteHabitUseCase } from './application/usecases/DeleteHabitUseCase.js
 import { ToggleHabitLogUseCase } from './application/usecases/ToggleHabitLogUseCase.js';
 import { MarkAllTodayUseCase } from './application/usecases/MarkAllTodayUseCase.js';
 import { ResetWeekUseCase } from './application/usecases/ResetWeekUseCase.js';
+import {
+  GetTasksUseCase,
+  CreateTaskUseCase,
+  UpdateTaskUseCase,
+  ToggleTaskUseCase,
+  DeleteTaskUseCase,
+  CompleteAllTasksUseCase,
+  ClearCompletedTasksUseCase
+} from './application/usecases/TaskUseCases.js';
 
 import { HabitController } from './presentation/controllers/HabitController.js';
+import { TaskController } from './presentation/controllers/TaskController.js';
 import { createHabitRouter } from './presentation/routes/habitRoutes.js';
+import { createTaskRouter } from './presentation/routes/taskRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,6 +54,7 @@ export function createApp(options: CreateAppOptions = {}): { app: Express; db: D
   // Repositories
   const habitRepo = new SQLiteHabitRepository(db);
   const habitLogRepo = new SQLiteHabitLogRepository(db);
+  const taskRepo = new SQLiteTaskRepository(db);
 
   // Use Cases
   const getHabitsWithWeekUseCase = new GetHabitsWithWeekUseCase(habitRepo, habitLogRepo);
@@ -54,7 +67,15 @@ export function createApp(options: CreateAppOptions = {}): { app: Express; db: D
   const markAllTodayUseCase = new MarkAllTodayUseCase(habitRepo, habitLogRepo);
   const resetWeekUseCase = new ResetWeekUseCase(habitLogRepo);
 
-  // Controller
+  const getTasksUseCase = new GetTasksUseCase(taskRepo);
+  const createTaskUseCase = new CreateTaskUseCase(taskRepo);
+  const updateTaskUseCase = new UpdateTaskUseCase(taskRepo);
+  const toggleTaskUseCase = new ToggleTaskUseCase(taskRepo);
+  const deleteTaskUseCase = new DeleteTaskUseCase(taskRepo);
+  const completeAllTasksUseCase = new CompleteAllTasksUseCase(taskRepo);
+  const clearCompletedTasksUseCase = new ClearCompletedTasksUseCase(taskRepo);
+
+  // Controllers
   const habitController = new HabitController(
     getHabitsWithWeekUseCase,
     getDashboardStatsUseCase,
@@ -67,6 +88,16 @@ export function createApp(options: CreateAppOptions = {}): { app: Express; db: D
     resetWeekUseCase
   );
 
+  const taskController = new TaskController(
+    getTasksUseCase,
+    createTaskUseCase,
+    updateTaskUseCase,
+    toggleTaskUseCase,
+    deleteTaskUseCase,
+    completeAllTasksUseCase,
+    clearCompletedTasksUseCase
+  );
+
   // Express App
   const app = express();
   app.use(cors());
@@ -74,6 +105,7 @@ export function createApp(options: CreateAppOptions = {}): { app: Express; db: D
 
   // API Routes
   app.use('/api/habits', createHabitRouter(habitController));
+  app.use('/api/tasks', createTaskRouter(taskController));
 
   // Health
   app.get('/api/health', (_req, res) => {

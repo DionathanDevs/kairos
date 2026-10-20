@@ -1,4 +1,12 @@
-import type { HabitWithWeekLogs, DashboardStats, HeatmapData, Habit } from '../types';
+import type {
+  HabitWithWeekLogs,
+  DashboardStats,
+  HeatmapData,
+  Habit,
+  Task,
+  TaskPriority,
+  TaskCategory
+} from '../types';
 
 const API_BASE = '/api';
 
@@ -72,5 +80,80 @@ export const api = {
     });
     if (!res.ok) throw new Error('Failed to reset week');
     return res.json();
+  },
+
+  // Tasks API
+  async getTasks(category?: TaskCategory): Promise<{ tasks: Task[] }> {
+    const query = category ? `?category=${category}` : '';
+    const res = await fetch(`${API_BASE}/tasks${query}`);
+    if (!res.ok) throw new Error('Failed to fetch tasks');
+    return res.json();
+  },
+
+  async createTask(
+    title: string,
+    description: string,
+    priority: TaskPriority,
+    category: TaskCategory
+  ): Promise<Task> {
+    const res = await fetch(`${API_BASE}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, description, priority, category })
+    });
+    if (!res.ok) throw new Error('Failed to create task');
+    return res.json();
+  },
+
+  async updateTask(
+    id: string,
+    title: string,
+    description: string,
+    priority: TaskPriority,
+    category: TaskCategory
+  ): Promise<Task> {
+    const res = await fetch(`${API_BASE}/tasks/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, description, priority, category })
+    });
+    if (!res.ok) throw new Error('Failed to update task');
+    return res.json();
+  },
+
+  async toggleTask(id: string): Promise<{ completed: boolean }> {
+    const res = await fetch(`${API_BASE}/tasks/${id}/toggle`, {
+      method: 'PATCH'
+    });
+    if (!res.ok) throw new Error('Failed to toggle task');
+    return res.json();
+  },
+
+  async deleteTask(id: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/tasks/${id}`, {
+      method: 'DELETE'
+    });
+    if (!res.ok) throw new Error('Failed to delete task');
+  },
+
+  async completeAllTasks(category: TaskCategory): Promise<{ updatedCount: number }> {
+    const res = await fetch(`${API_BASE}/tasks/actions/complete-all`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category })
+    });
+    if (!res.ok) throw new Error('Failed to complete all tasks');
+    return res.json();
+  },
+
+  async clearCompletedTasks(category: TaskCategory): Promise<{ deletedCount: number }> {
+    const res = await fetch(`${API_BASE}/tasks/actions/clear-completed`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category })
+    });
+    if (!res.ok) throw new Error('Failed to clear completed tasks');
+    return res.json();
   }
 };
+

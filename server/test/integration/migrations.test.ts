@@ -18,10 +18,11 @@ describe('Migrations Integration Test', () => {
 
     expect(applied).toContain('001_create_habits_table.sql');
     expect(applied).toContain('002_create_habit_logs_table.sql');
+    expect(applied).toContain('003_create_tasks_table.sql');
 
     // Verify _migrations table
     const migrationRows = db.prepare('SELECT name FROM _migrations').all() as unknown as { name: string }[];
-    expect(migrationRows).toHaveLength(2);
+    expect(migrationRows).toHaveLength(3);
 
     // Verify habits table is created and empty (no mock data)
     const habitRows = db.prepare('SELECT * FROM habits').all() as unknown as { id: string; title: string }[];
@@ -30,6 +31,10 @@ describe('Migrations Integration Test', () => {
     // Verify habit_logs table is created and empty
     const logRows = db.prepare('SELECT * FROM habit_logs').all() as unknown as { id: string }[];
     expect(logRows).toHaveLength(0);
+
+    // Verify tasks table is created and empty
+    const taskRows = db.prepare('SELECT * FROM tasks').all() as unknown as { id: string }[];
+    expect(taskRows).toHaveLength(0);
   });
 
   it('should be idempotent and not re-apply existing migrations', () => {
