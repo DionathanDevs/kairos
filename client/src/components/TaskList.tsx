@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Check, Edit2, User, Briefcase, Flag, ChevronDown } from 'lucide-react';
 import type { Task, TaskCategory, TaskPriority, Language } from '../types';
 import { translations } from '../i18n/translations';
@@ -51,13 +51,22 @@ export const TaskList: React.FC<TaskListProps> = ({
     setVisibleCount(PAGE_SIZE);
   }, [activeCategory]);
 
-  const personalCount = tasks.filter((item) => item.category === 'personal' && !item.completed).length;
-  const workCount = tasks.filter((item) => item.category === 'work' && !item.completed).length;
+  const { personalCount, workCount, filteredTasks } = useMemo(() => {
+    let personal = 0;
+    let work = 0;
+    const categoryTasks: Task[] = [];
 
-  // Filter by selected category & sort: pending first -> high/medium/low -> order_index
-  const filteredTasks = tasks
-    .filter((item) => item.category === activeCategory)
-    .sort((a, b) => {
+    for (const item of tasks) {
+      if (!item.completed) {
+        if (item.category === 'personal') personal++;
+        else if (item.category === 'work') work++;
+      }
+      if (item.category === activeCategory) {
+        categoryTasks.push(item);
+      }
+    }
+
+    categoryTasks.sort((a, b) => {
       if (a.completed !== b.completed) {
         return a.completed ? 1 : -1;
       }
@@ -65,6 +74,13 @@ export const TaskList: React.FC<TaskListProps> = ({
       if (pDiff !== 0) return pDiff;
       return a.order_index - b.order_index;
     });
+
+    return {
+      personalCount: personal,
+      workCount: work,
+      filteredTasks: categoryTasks
+    };
+  }, [tasks, activeCategory]);
 
   const visibleTasks = filteredTasks.slice(0, visibleCount);
   const hasMore = filteredTasks.length > visibleCount;

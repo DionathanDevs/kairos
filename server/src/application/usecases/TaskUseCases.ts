@@ -13,28 +13,13 @@ export interface TaskDTO {
   created_at: string;
 }
 
-const PRIORITY_WEIGHT: Record<TaskPriority, number> = {
-  high: 0,
-  medium: 1,
-  low: 2
-};
-
 export class GetTasksUseCase {
   constructor(private taskRepo: ITaskRepository) {}
 
   public execute(category?: TaskCategory, limit?: number, offset?: number): { tasks: TaskDTO[] } {
     const tasks = this.taskRepo.findAll(category, limit, offset);
-    const sorted = [...tasks].sort((a, b) => {
-      if (a.completed !== b.completed) {
-        return a.completed ? 1 : -1;
-      }
-      const weightDiff = PRIORITY_WEIGHT[a.priority] - PRIORITY_WEIGHT[b.priority];
-      if (weightDiff !== 0) return weightDiff;
-      return a.orderIndex - b.orderIndex;
-    });
-
     return {
-      tasks: sorted.map((t) => t.toJSON())
+      tasks: tasks.map((t) => t.toJSON())
     };
   }
 }

@@ -46,8 +46,9 @@ export function App() {
   });
   const [heatmapData, setHeatmapData] = useState<HeatmapData | null>(null);
 
-  // Tasks State
+  // Tasks State (loaded on demand when Tasks tab is opened)
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasksLoaded, setTasksLoaded] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -78,17 +79,15 @@ export function App() {
 
   const loadData = useCallback(async () => {
     try {
-      const [habitsRes, statsRes, heatmapRes, tasksRes] = await Promise.all([
+      const [habitsRes, statsRes, heatmapRes] = await Promise.all([
         api.getHabits(),
         api.getStats(),
-        api.getHeatmap(22),
-        api.getTasks()
+        api.getHeatmap(22)
       ]);
       setHabits(habitsRes.habits);
       setWeekDays(habitsRes.weekDays);
       setStats(statsRes);
       setHeatmapData(heatmapRes);
-      setTasks(tasksRes.tasks);
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -96,9 +95,25 @@ export function App() {
     }
   }, []);
 
+  const loadTasks = useCallback(async () => {
+    try {
+      const tasksRes = await api.getTasks();
+      setTasks(tasksRes.tasks);
+      setTasksLoaded(true);
+    } catch (err) {
+      console.error('Failed to load tasks:', err);
+    }
+  }, []);
+
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    if (activeTab === 'tasks' && !tasksLoaded) {
+      loadTasks();
+    }
+  }, [activeTab, tasksLoaded, loadTasks]);
 
   // --- HABIT HANDLERS ---
 

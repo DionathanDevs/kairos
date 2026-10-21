@@ -1,4 +1,4 @@
-import type { DatabaseSync } from 'node:sqlite';
+import type { DatabaseSync, StatementSync } from 'node:sqlite';
 import { HabitLog } from '../../../domain/entities/HabitLog.js';
 import type { IHabitLogRepository } from '../../../domain/repositories/IHabitLogRepository.js';
 
@@ -10,12 +10,21 @@ interface LogRow {
 }
 
 export class SQLiteHabitLogRepository implements IHabitLogRepository {
+  private stmtFindByHabitAndDate?: StatementSync;
+  private stmtFindByHabitAndDateRange?: StatementSync;
+  private stmtFindCompletedGroupedByDate?: StatementSync;
+  private stmtCountCompletedOnDate?: StatementSync;
+  private stmtSave?: StatementSync;
+  private stmtDeleteByHabitId?: StatementSync;
+  private stmtResetByDateRange?: StatementSync;
+
   constructor(private db: DatabaseSync) {}
 
   public findByHabitAndDate(habitId: string, date: string): HabitLog | null {
-    const row = this.db
-      .prepare('SELECT * FROM habit_logs WHERE habit_id = ? AND date = ?')
-      .get(habitId, date) as unknown as LogRow | undefined;
+    this.stmtFindByHabitAndDate ??= this.db.prepare(
+      'SELECT * FROM habit_logs WHERE habit_id = ? AND date = ?'
+    );
+    const row = this.stmtFindByHabitAndDate.get(habitId, date) as unknown as LogRow | undefined;
 
     if (!row) return null;
 
@@ -28,12 +37,11 @@ export class SQLiteHabitLogRepository implements IHabitLogRepository {
   }
 
   public findByHabitAndDateRange(habitId: string, startDate: string, endDate: string): HabitLog[] {
-    const rows = this.db
-      .prepare(`
-        SELECT * FROM habit_logs 
-        WHERE habit_id = ? AND date BETWEEN ? AND ?
-      `)
-      .all(habitId, startDate, endDate) as unknown as LogRow[];
+    this.stmtFindByHabitAndDateRange ??= this.db.prepare(`
+      SELECT * FROM habit_logs 
+      WHERE habit_id = ? AND date BETWEEN ? AND ?
+    `);
+    const rows = this.stmtFindByHabitAndDateRange.all(habitId, startDate, endDate) as unknown as LogRow[];
 
     return rows.map(
       (r) =>
@@ -47,14 +55,16 @@ export class SQLiteHabitLogRepository implements IHabitLogRepository {
   }
 
   public findCompletedGroupedByDate(startDate: string, endDate: string): Map<string, number> {
-    const rows = this.db
-      .prepare(`
-        SELECT date, SUM(completed) as comp_count
-        FROM habit_logs
-        WHERE date BETWEEN ? AND ?
-        GROUP BY date
-      `)
-      .all(startDate, endDate) as unknown as { date: string; comp_count: number }[];
+    this.stmtFindCompletedGroupedByDate ??= this.db.prepare(`
+      SELECT date, SUM(completed) as comp_count
+      FROM habit_logs
+      WHERE date BETWEEN ? AND ?
+      GROUP BY date
+    `);
+    const rows = this.stmtFindCompletedGroupedByDate.all(startDate, endDate) as unknown as {
+      date: string;
+      comp_count: number;
+    }[];
 
     const map = new Map<string, number>();
     for (const r of rows) {
@@ -64,47 +74,47 @@ export class SQLiteHabitLogRepository implements IHabitLogRepository {
   }
 
   public countCompletedOnDate(date: string): number {
-    const row = this.db
-      .prepare('SELECT SUM(completed) as count FROM habit_logs WHERE date = ?')
-      .get(date) as unknown as { count: number | null };
+    this.stmtCountCompletedOnDate ??= this.db.prepare(
+      'SELECT SUM(completed) as count FROM habit_logs WHERE date = ?'
+    );
+    const row = this.stmtCountCompletedOnDate.get(date) as unknown as { count: number | null };
 
     return Number(row?.count ?? 0);
   }
 
   public save(log: HabitLog): void {
-    this.db
-      .prepare(`
-        INSERT INTO habit_logs (id, habit_id, date, completed)
-        VALUES (?, ?, ?, ?)
-        ON CONFLICT(habit_id, date) DO UPDATE SET completed = excluded.completed
-      `)
-      .run(log.id, log.habitId, log.date, log.completed ? 1 : 0);
+    this.stmtSave ??= this.db.prepare(`
+      INSERT INTO habit_logs (id, habit_id, date, completed)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(habit_id, date) DO UPDATE SET completed = excluded.completed
+    `);
+    this.stmtSave.run(log.id, log.habitId, log.date, log.completed ? 1 : 0);
   }
 
   public saveBatch(logs: HabitLog[]): void {
-    const stmt = this.db.prepare(`
+    this.stmtSave ??= this.db.prepare(`
       INSERT INTO habit_logs (id, habit_id, date, completed)
       VALUES (?, ?, ?, ?)
       ON CONFLICT(habit_id, date) DO UPDATE SET completed = excluded.completed
     `);
 
     for (const l of logs) {
-      stmt.run(l.id, l.habitId, l.date, l.completed ? 1 : 0);
+      this.stmtSave.run(l.id, l.habitId, l.date, l.completed ? 1 : 0);
     }
   }
 
   public deleteByHabitId(habitId: string): void {
-    this.db.prepare('DELETE FROM habit_logs WHERE habit_id = ?').run(habitId);
+    this.stmtDeleteByHabitId ??= this.db.prepare('DELETE FROM habit_logs WHERE habit_id = ?');
+    this.stmtDeleteByHabitId.run(habitId);
   }
 
   public resetByDateRange(startDate: string, endDate: string): number {
-    const res = this.db
-      .prepare(`
-        UPDATE habit_logs
-        SET completed = 0
-        WHERE date BETWEEN ? AND ?
-      `)
-      .run(startDate, endDate);
+    this.stmtResetByDateRange ??= this.db.prepare(`
+      UPDATE habit_logs
+      SET completed = 0
+      WHERE date BETWEEN ? AND ?
+    `);
+    const res = this.stmtResetByDateRange.run(startDate, endDate);
 
     return Number(res.changes);
   }
