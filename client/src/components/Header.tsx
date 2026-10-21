@@ -2,7 +2,6 @@ import React from 'react';
 import { Plus, CheckCheck, RotateCcw, Trash2, Globe } from 'lucide-react';
 import type { AppTab, Language } from '../types';
 import { translations } from '../i18n/translations';
-import logoKairos from '../assets/logo-k-kairos.jpeg';
 
 interface HeaderProps {
   lang: Language;
@@ -39,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-center md:justify-start gap-3">
           <div className="flex items-center gap-2.5">
             <img
-              src={logoKairos}
+              src="/logo-k-kairos.jpeg"
               alt="Kairos Logo"
               className="w-8 h-8 sm:w-9 sm:h-9 object-contain rounded-lg drop-shadow"
             />
