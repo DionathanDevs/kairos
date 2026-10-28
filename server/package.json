@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
+    "lint": "tsc --noEmit",
     "start": "node dist/index.js",
     "migrate": "tsx src/infrastructure/database/migrations/runner.ts",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",

@@ -1,0 +1,23 @@
+title = "Kairos Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "telegram-bot-api-token"
+description = "Detects Telegram Bot API Tokens issued by BotFather"
+regex = '''(?i)\b[0-9]{8,10}:[a-zA-Z0-9_-]{35}\b'''
+tags = ["key", "telegram", "bot", "secret"]
+
+[[rules]]
+id = "telegram-env-secret-assignment"
+description = "Detects hardcoded TELEGRAM_BOT_TOKEN or TELEGRAM_WEBHOOK_SECRET values"
+regex = '''(?i)(TELEGRAM_BOT_TOKEN|TELEGRAM_WEBHOOK_SECRET)\s*[:=]\s*["']?[a-zA-Z0-9_:-]{12,}["']?'''
+tags = ["env", "telegram", "secret"]
+
+[allowlist]
+description = "Allowlist for test mocks and example files"
+paths = [
+  '''\.env\.example$''',
+  '''server/test/.*\.test\.ts$'''
+]

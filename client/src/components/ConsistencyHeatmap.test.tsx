@@ -73,7 +73,7 @@ describe('ConsistencyHeatmap Component', () => {
     expect(todaySquare).not.toBeNull();
   });
 
-  it('auto-centers scroll container completely in the middle of overflow', () => {
+  it('auto-scrolls container to the end so current week is visible', () => {
     vi.useFakeTimers();
 
     const { container } = render(
@@ -87,14 +87,14 @@ describe('ConsistencyHeatmap Component', () => {
     const scrollContainer = container.querySelector('.overflow-x-auto') as HTMLDivElement;
     expect(scrollContainer).not.toBeNull();
 
-    // Mock dimensions for centering
+    // Mock dimensions for scrolling to end
     Object.defineProperty(scrollContainer, 'clientWidth', { value: 300, configurable: true });
     Object.defineProperty(scrollContainer, 'scrollWidth', { value: 700, configurable: true });
 
     vi.advanceTimersByTime(100);
 
-    // Expected scrollLeft = (700 - 300) / 2 = 200
-    expect(scrollContainer.scrollLeft).toBe(200);
+    // Expected scrollLeft = 700 - 300 = 400
+    expect(scrollContainer.scrollLeft).toBe(400);
 
     vi.useRealTimers();
   });

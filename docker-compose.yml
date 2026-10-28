@@ -12,6 +12,12 @@ services:
       - PORT=3001
       - DATABASE_PATH=/app/server/data/habits.db
       - NODE_OPTIONS=--max-old-space-size=200
+      - TELEGRAM_BOT_ENABLED=${TELEGRAM_BOT_ENABLED:-false}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_ALLOWED_CHAT_IDS=${TELEGRAM_ALLOWED_CHAT_IDS:-}
+      - TELEGRAM_BOT_MODE=${TELEGRAM_BOT_MODE:-polling}
+      - TELEGRAM_POLLING_INTERVAL_MS=${TELEGRAM_POLLING_INTERVAL_MS:-2000}
+      - TELEGRAM_WEBHOOK_SECRET=${TELEGRAM_WEBHOOK_SECRET:-}
     volumes:
       - habits-data:/app/server/data
     deploy:
