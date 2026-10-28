@@ -11,8 +11,18 @@
     "build": "npm run build:client && npm run build:server",
     "start": "npm start --prefix server",
     "migrate": "npm run migrate --prefix server",
-    "test": "npm run test --prefix server",
+    "lint": "node scripts/gates/lint-gate.mjs",
+    "gate:arch": "node scripts/gates/arch-gate.mjs",
+    "gate:lint": "node scripts/gates/lint-gate.mjs",
+    "gate:review": "node scripts/gates/code-review-gate.mjs",
+    "gate:all": "node scripts/gates/run-all-gates.mjs",
+    "test": "node scripts/gates/run-all-gates.mjs",
+    "test:server": "npm run test --prefix server",
+    "test:client": "npm run test --prefix client",
     "test:unit": "npm run test:unit --prefix server",
-    "test:integration": "npm run test:integration --prefix server"
+    "test:integration": "npm run test:integration --prefix server",
+    "security:gitleaks": "node scripts/verify.mjs --only=gitleaks",
+    "security:audit": "node scripts/verify.mjs --only=audit",
+    "verify": "node scripts/verify.mjs"
   }
 }

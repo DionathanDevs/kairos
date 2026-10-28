@@ -32,8 +32,19 @@ import {
 
 import { HabitController } from './presentation/controllers/HabitController.js';
 import { TaskController } from './presentation/controllers/TaskController.js';
+import { TelegramWebhookController } from './presentation/controllers/TelegramWebhookController.js';
 import { createHabitRouter } from './presentation/routes/habitRoutes.js';
 import { createTaskRouter } from './presentation/routes/taskRoutes.js';
+import { createTelegramRouter } from './presentation/routes/telegramRoutes.js';
+import { HandleTelegramUpdateUseCase } from './application/usecases/HandleTelegramUpdateUseCase.js';
+import {
+  loadTelegramBotConfig,
+  type TelegramBotConfig
+} from './infrastructure/telegram/TelegramBotConfig.js';
+import {
+  TelegramApiClient,
+  type ITelegramApiClient
+} from './infrastructure/telegram/TelegramApiClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,9 +52,16 @@ const __dirname = path.dirname(__filename);
 export interface CreateAppOptions {
   db?: DatabaseSync;
   runMigrations?: boolean;
+  telegramConfig?: TelegramBotConfig;
+  telegramApiClient?: ITelegramApiClient;
 }
 
-export function createApp(options: CreateAppOptions = {}): { app: Express; db: DatabaseSync } {
+export function createApp(options: CreateAppOptions = {}): {
+  app: Express;
+  db: DatabaseSync;
+  telegramConfig: TelegramBotConfig;
+  handleTelegramUpdateUseCase: HandleTelegramUpdateUseCase;
+} {
   const db = options.db || getDatabase();
 
   if (options.runMigrations !== false) {
@@ -98,6 +116,24 @@ export function createApp(options: CreateAppOptions = {}): { app: Express; db: D
     clearCompletedTasksUseCase
   );
 
+  // Telegram Bot Integration
+  const telegramConfig = options.telegramConfig || loadTelegramBotConfig();
+  const handleTelegramUpdateUseCase = new HandleTelegramUpdateUseCase(
+    createTaskUseCase,
+    getTasksUseCase,
+    telegramConfig.allowedChatIds
+  );
+
+  const telegramApiClient =
+    options.telegramApiClient ||
+    (telegramConfig.botToken ? new TelegramApiClient(telegramConfig.botToken) : undefined);
+
+  const telegramWebhookController = new TelegramWebhookController(
+    handleTelegramUpdateUseCase,
+    telegramConfig.webhookSecret,
+    telegramApiClient
+  );
+
   // Express App
   const app = express();
   app.use(cors());
@@ -106,6 +142,7 @@ export function createApp(options: CreateAppOptions = {}): { app: Express; db: D
   // API Routes
   app.use('/api/habits', createHabitRouter(habitController));
   app.use('/api/tasks', createTaskRouter(taskController));
+  app.use('/api/telegram', createTelegramRouter(telegramWebhookController));
 
   // Health
   app.get('/api/health', (_req, res) => {
@@ -121,5 +158,5 @@ export function createApp(options: CreateAppOptions = {}): { app: Express; db: D
     });
   }
 
-  return { app, db };
+  return { app, db, telegramConfig, handleTelegramUpdateUseCase };
 }
