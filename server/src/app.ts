@@ -10,6 +10,7 @@ import { MigrationRunner } from './infrastructure/database/migrations/MigrationR
 import { SQLiteHabitRepository } from './infrastructure/database/repositories/SQLiteHabitRepository.js';
 import { SQLiteHabitLogRepository } from './infrastructure/database/repositories/SQLiteHabitLogRepository.js';
 import { SQLiteTaskRepository } from './infrastructure/database/repositories/SQLiteTaskRepository.js';
+import { SQLiteAgentTaskRepository } from './infrastructure/database/repositories/SQLiteAgentTaskRepository.js';
 
 import { GetHabitsWithWeekUseCase } from './application/usecases/GetHabitsWithWeekUseCase.js';
 import { GetDashboardStatsUseCase } from './application/usecases/GetDashboardStatsUseCase.js';
@@ -29,12 +30,25 @@ import {
   CompleteAllTasksUseCase,
   ClearCompletedTasksUseCase
 } from './application/usecases/TaskUseCases.js';
+import {
+  GetAgentTasksUseCase,
+  GetAgentTaskByIdUseCase,
+  CreateAgentTaskUseCase,
+  UpdateAgentTaskUseCase,
+  MarkAgentTaskReadyUseCase,
+  ClaimNextAgentTaskUseCase,
+  AppendAgentTaskLogUseCase,
+  CompleteAgentTaskUseCase,
+  DeleteAgentTaskUseCase
+} from './application/usecases/AgentTaskUseCases.js';
 
 import { HabitController } from './presentation/controllers/HabitController.js';
 import { TaskController } from './presentation/controllers/TaskController.js';
+import { AgentTaskController } from './presentation/controllers/AgentTaskController.js';
 import { TelegramWebhookController } from './presentation/controllers/TelegramWebhookController.js';
 import { createHabitRouter } from './presentation/routes/habitRoutes.js';
 import { createTaskRouter } from './presentation/routes/taskRoutes.js';
+import { createAgentTaskRouter } from './presentation/routes/agentTaskRoutes.js';
 import { createTelegramRouter } from './presentation/routes/telegramRoutes.js';
 import { HandleTelegramUpdateUseCase } from './application/usecases/HandleTelegramUpdateUseCase.js';
 import {
@@ -54,6 +68,7 @@ export interface CreateAppOptions {
   runMigrations?: boolean;
   telegramConfig?: TelegramBotConfig;
   telegramApiClient?: ITelegramApiClient;
+  agentApiKey?: string;
 }
 
 export function createApp(options: CreateAppOptions = {}): {
@@ -73,8 +88,9 @@ export function createApp(options: CreateAppOptions = {}): {
   const habitRepo = new SQLiteHabitRepository(db);
   const habitLogRepo = new SQLiteHabitLogRepository(db);
   const taskRepo = new SQLiteTaskRepository(db);
+  const agentTaskRepo = new SQLiteAgentTaskRepository(db);
 
-  // Use Cases
+  // Use Cases — Habits
   const getHabitsWithWeekUseCase = new GetHabitsWithWeekUseCase(habitRepo, habitLogRepo);
   const getDashboardStatsUseCase = new GetDashboardStatsUseCase(habitRepo, habitLogRepo);
   const getHeatmapUseCase = new GetHeatmapUseCase(habitRepo, habitLogRepo);
@@ -85,6 +101,7 @@ export function createApp(options: CreateAppOptions = {}): {
   const markAllTodayUseCase = new MarkAllTodayUseCase(habitRepo, habitLogRepo);
   const resetWeekUseCase = new ResetWeekUseCase(habitLogRepo);
 
+  // Use Cases — Tasks
   const getTasksUseCase = new GetTasksUseCase(taskRepo);
   const createTaskUseCase = new CreateTaskUseCase(taskRepo);
   const updateTaskUseCase = new UpdateTaskUseCase(taskRepo);
@@ -92,6 +109,17 @@ export function createApp(options: CreateAppOptions = {}): {
   const deleteTaskUseCase = new DeleteTaskUseCase(taskRepo);
   const completeAllTasksUseCase = new CompleteAllTasksUseCase(taskRepo);
   const clearCompletedTasksUseCase = new ClearCompletedTasksUseCase(taskRepo);
+
+  // Use Cases — AI Agent Tasks
+  const getAgentTasksUseCase = new GetAgentTasksUseCase(agentTaskRepo);
+  const getAgentTaskByIdUseCase = new GetAgentTaskByIdUseCase(agentTaskRepo);
+  const createAgentTaskUseCase = new CreateAgentTaskUseCase(agentTaskRepo);
+  const updateAgentTaskUseCase = new UpdateAgentTaskUseCase(agentTaskRepo);
+  const markAgentTaskReadyUseCase = new MarkAgentTaskReadyUseCase(agentTaskRepo);
+  const claimNextAgentTaskUseCase = new ClaimNextAgentTaskUseCase(agentTaskRepo);
+  const appendAgentTaskLogUseCase = new AppendAgentTaskLogUseCase(agentTaskRepo);
+  const completeAgentTaskUseCase = new CompleteAgentTaskUseCase(agentTaskRepo);
+  const deleteAgentTaskUseCase = new DeleteAgentTaskUseCase(agentTaskRepo);
 
   // Controllers
   const habitController = new HabitController(
@@ -114,6 +142,19 @@ export function createApp(options: CreateAppOptions = {}): {
     deleteTaskUseCase,
     completeAllTasksUseCase,
     clearCompletedTasksUseCase
+  );
+
+  const agentTaskController = new AgentTaskController(
+    getAgentTasksUseCase,
+    getAgentTaskByIdUseCase,
+    createAgentTaskUseCase,
+    updateAgentTaskUseCase,
+    markAgentTaskReadyUseCase,
+    claimNextAgentTaskUseCase,
+    appendAgentTaskLogUseCase,
+    completeAgentTaskUseCase,
+    deleteAgentTaskUseCase,
+    options.agentApiKey ?? process.env.AGENT_API_KEY ?? ''
   );
 
   // Telegram Bot Integration
@@ -142,6 +183,7 @@ export function createApp(options: CreateAppOptions = {}): {
   // API Routes
   app.use('/api/habits', createHabitRouter(habitController));
   app.use('/api/tasks', createTaskRouter(taskController));
+  app.use('/api/agent-tasks', createAgentTaskRouter(agentTaskController));
   app.use('/api/telegram', createTelegramRouter(telegramWebhookController));
 
   // Health

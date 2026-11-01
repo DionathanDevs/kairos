@@ -51,8 +51,10 @@ export const translations = {
     nav: {
       habits: 'Hábitos',
       tasks: 'Tarefas',
+      agent: 'Agente IA',
       quickAddHabit: 'Novo Hábito',
-      quickAddTask: 'Nova Tarefa'
+      quickAddTask: 'Nova Tarefa',
+      quickAddAgentTask: 'Nova Tarefa p/ IA'
     },
     tasks: {
       subtitle: 'Organização de tarefas pessoais e do trabalho por prioridade',
@@ -91,6 +93,64 @@ export const translations = {
         confirmClearMsg: 'Deseja realmente remover todas as tarefas concluídas desta aba?',
         completeAllSuccess: 'Todas as tarefas desta aba foram concluídas!',
         clearCompletedSuccess: 'Tarefas concluídas removidas com sucesso!'
+      }
+    },
+    agentTasks: {
+      subtitle: 'Fila de automação, repositórios alvo e histórico de execução para Agentes Externos',
+      newAgentTask: 'Nova Tarefa IA',
+      refreshQueue: 'Atualizar Fila',
+      claimNextBtn: 'Simular Consumo da Fila',
+      filterAll: 'Todas',
+      filterReady: 'Prontas p/ IA',
+      filterActive: 'Em Execução / Impedidas',
+      filterDone: 'Revisão / Concluídas',
+      emptyState: 'Nenhuma tarefa para Agente IA encontrada neste filtro.',
+      intentLabel: 'Intenção da Tarefa',
+      repoLabel: 'Repositório',
+      criteriaLabel: 'Critérios de Aceite',
+      artifactLabel: 'Artefato / PR Entregue',
+      openArtifact: 'Abrir PR / Artefato',
+      markReadyBtn: 'Liberar p/ IA',
+      approveReviewBtn: 'Aprovar Revisão',
+      logsToggle: 'Histórico & Logs',
+      addLogPlaceholder: 'Registrar progresso ou impedimento...',
+      sendProgressBtn: 'Log Progresso',
+      sendImpedimentBtn: 'Reportar Impedimento',
+      completePlaceholder: 'URL do Pull Request / Artefato (ex: https://github.com/org/repo/pull/1)',
+      completeBtn: 'Entregar PR',
+      markedReadyToast: 'Tarefa marcada como pronta para execução externa!',
+      claimedToast: 'Próxima tarefa da fila assumida para processamento!',
+      queueEmptyToast: 'Nenhuma tarefa no estado "Pronta p/ IA" na fila.',
+      completedToast: 'Tarefa atualizada com o artefato gerado!',
+      statuses: {
+        planning: 'Planejamento',
+        ready: 'Pronta p/ IA',
+        in_progress: 'Em Processamento',
+        blocked: 'Impedimento',
+        in_review: 'Em Revisão (PR)',
+        completed: 'Concluída'
+      },
+      modal: {
+        createTitle: 'Nova Tarefa para Agente IA',
+        editTitle: 'Editar Tarefa de IA',
+        titleLabel: 'Título da Tarefa',
+        titlePlaceholder: 'ex: Implementar autenticação JWT no serviço de pedidos',
+        intentLabel: 'Intenção da Tarefa (Prompt / Objetivo para o Agente)',
+        intentPlaceholder: 'Descreva claramente o que o agente externo deve implementar ou corrigir...',
+        repoLabel: 'Repositório Referenciado (URL ou org/repo)',
+        repoPlaceholder: 'ex: https://github.com/org/minha-aplicacao',
+        branchLabel: 'Branch Alvo (Opcional)',
+        branchPlaceholder: 'ex: main, develop',
+        criteriaLabel: 'Critérios de Aceite',
+        criteriaPlaceholder: 'ex: Testes unitários criados, linter sem erros e rota documentada',
+        descLabel: 'Contexto Técnico Adicional',
+        descPlaceholder: 'ex: Utilizar middleware em src/presentation/middlewares',
+        statusLabel: 'Estado Inicial na Fila',
+        readyNowOption: 'Pronta para Execução (Liberar na Fila)',
+        planningOption: 'Rascunho / Em Planejamento',
+        save: 'Salvar Tarefa IA',
+        cancel: 'Cancelar',
+        delete: 'Excluir'
       }
     }
   },
@@ -146,8 +206,10 @@ export const translations = {
     nav: {
       habits: 'Habits',
       tasks: 'Tasks',
+      agent: 'AI Agent',
       quickAddHabit: 'New Habit',
-      quickAddTask: 'New Task'
+      quickAddTask: 'New Task',
+      quickAddAgentTask: 'New AI Task'
     },
     tasks: {
       subtitle: 'Personal and work task organization by priority',
@@ -187,7 +249,64 @@ export const translations = {
         completeAllSuccess: 'All tasks in this tab have been marked as completed!',
         clearCompletedSuccess: 'Completed tasks removed successfully!'
       }
+    },
+    agentTasks: {
+      subtitle: 'Automation queue, target repositories and execution history for External Agents',
+      newAgentTask: 'New AI Task',
+      refreshQueue: 'Refresh Queue',
+      claimNextBtn: 'Simulate Queue Claim',
+      filterAll: 'All',
+      filterReady: 'Ready for AI',
+      filterActive: 'In Progress / Blocked',
+      filterDone: 'In Review / Completed',
+      emptyState: 'No AI Agent tasks found for this filter.',
+      intentLabel: 'Task Intent',
+      repoLabel: 'Repository',
+      criteriaLabel: 'Acceptance Criteria',
+      artifactLabel: 'Delivered Artifact / PR',
+      openArtifact: 'Open PR / Artifact',
+      markReadyBtn: 'Mark Ready for AI',
+      approveReviewBtn: 'Approve Review',
+      logsToggle: 'History & Logs',
+      addLogPlaceholder: 'Log progress or report impediment...',
+      sendProgressBtn: 'Log Progress',
+      sendImpedimentBtn: 'Report Impediment',
+      completePlaceholder: 'Pull Request / Artifact URL (e.g. https://github.com/org/repo/pull/1)',
+      completeBtn: 'Deliver PR',
+      markedReadyToast: 'Task marked as ready for external execution!',
+      claimedToast: 'Next task in queue claimed for processing!',
+      queueEmptyToast: 'No tasks in "Ready for AI" state in the queue.',
+      completedToast: 'Task updated with generated artifact!',
+      statuses: {
+        planning: 'Planning',
+        ready: 'Ready for AI',
+        in_progress: 'In Progress',
+        blocked: 'Blocked',
+        in_review: 'In Review (PR)',
+        completed: 'Completed'
+      },
+      modal: {
+        createTitle: 'New AI Agent Task',
+        editTitle: 'Edit AI Task',
+        titleLabel: 'Task Title',
+        titlePlaceholder: 'e.g. Implement JWT auth in orders service',
+        intentLabel: 'Task Intent (Prompt / Goal for the Agent)',
+        intentPlaceholder: 'Clearly describe what the external agent should build or fix...',
+        repoLabel: 'Referenced Repository (URL or org/repo)',
+        repoPlaceholder: 'e.g. https://github.com/org/my-application',
+        branchLabel: 'Target Branch (Optional)',
+        branchPlaceholder: 'e.g. main, develop',
+        criteriaLabel: 'Acceptance Criteria',
+        criteriaPlaceholder: 'e.g. Unit tests added, zero linter errors and documented route',
+        descLabel: 'Additional Technical Context',
+        descPlaceholder: 'e.g. Use middleware under src/presentation/middlewares',
+        statusLabel: 'Initial Queue State',
+        readyNowOption: 'Ready for Execution (Enqueue Now)',
+        planningOption: 'Draft / Planning',
+        save: 'Save AI Task',
+        cancel: 'Cancel',
+        delete: 'Delete'
+      }
     }
   }
 };
-

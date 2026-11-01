@@ -1,5 +1,5 @@
 import React from 'react';
-import { CalendarCheck2, ListTodo, Plus } from 'lucide-react';
+import { CalendarCheck2, ListTodo, Bot, Plus } from 'lucide-react';
 import type { AppTab, Language } from '../types';
 import { translations } from '../i18n/translations';
 
@@ -7,6 +7,7 @@ interface NavigationMenuProps {
   activeTab: AppTab;
   lang: Language;
   pendingTasksCount?: number;
+  activeAgentTasksCount?: number;
   onSelectTab: (tab: AppTab) => void;
   onQuickAdd: () => void;
 }
@@ -15,24 +16,30 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
   activeTab,
   lang,
   pendingTasksCount = 0,
+  activeAgentTasksCount = 0,
   onSelectTab,
   onQuickAdd
 }) => {
   const t = translations[lang];
-  const quickAddTitle = activeTab === 'habits' ? t.nav.quickAddHabit : t.nav.quickAddTask;
+  const quickAddTitle =
+    activeTab === 'habits'
+      ? t.nav.quickAddHabit
+      : activeTab === 'tasks'
+      ? t.nav.quickAddTask
+      : t.nav.quickAddAgentTask;
 
   return (
     <nav
       aria-label="Main Navigation"
       className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-40 md:static md:translate-x-0 md:flex md:items-center md:justify-center md:mb-5"
     >
-      <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-2 rounded-full bg-dark-card/95 backdrop-blur-md border border-dark-border shadow-[0_10px_35px_rgba(0,0,0,0.65)]">
+      <div className="flex items-center gap-1 sm:gap-2 px-2.5 py-2 rounded-full bg-dark-card/95 backdrop-blur-md border border-dark-border shadow-[0_10px_35px_rgba(0,0,0,0.65)]">
         {/* Habits Tab */}
         <button
           type="button"
           onClick={() => onSelectTab('habits')}
           aria-current={activeTab === 'habits' ? 'page' : undefined}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 active:scale-95 ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 active:scale-95 ${
             activeTab === 'habits'
               ? 'bg-brand-green/15 text-brand-green border border-brand-green/30 shadow-sm'
               : 'text-gray-400 hover:text-gray-200 hover:bg-dark-cardHover/60 border border-transparent'
@@ -62,7 +69,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
           type="button"
           onClick={() => onSelectTab('tasks')}
           aria-current={activeTab === 'tasks' ? 'page' : undefined}
-          className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 active:scale-95 ${
+          className={`relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 active:scale-95 ${
             activeTab === 'tasks'
               ? 'bg-brand-green/15 text-brand-green border border-brand-green/30 shadow-sm'
               : 'text-gray-400 hover:text-gray-200 hover:bg-dark-cardHover/60 border border-transparent'
@@ -83,6 +90,36 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
               }`}
             >
               {pendingTasksCount}
+            </span>
+          )}
+        </button>
+
+        {/* AI Agent Tab */}
+        <button
+          type="button"
+          onClick={() => onSelectTab('agent')}
+          aria-current={activeTab === 'agent' ? 'page' : undefined}
+          className={`relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-200 active:scale-95 ${
+            activeTab === 'agent'
+              ? 'bg-brand-green/15 text-brand-green border border-brand-green/30 shadow-sm'
+              : 'text-gray-400 hover:text-gray-200 hover:bg-dark-cardHover/60 border border-transparent'
+          }`}
+        >
+          <Bot
+            className={`w-4 h-4 sm:w-[18px] sm:h-[18px] transition-colors ${
+              activeTab === 'agent' ? 'text-brand-green' : 'text-gray-400'
+            }`}
+          />
+          <span className="whitespace-nowrap">{t.nav.agent}</span>
+          {activeAgentTasksCount > 0 && (
+            <span
+              className={`ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                activeTab === 'agent'
+                  ? 'bg-brand-green text-black'
+                  : 'bg-dark-subtle text-gray-300'
+              }`}
+            >
+              {activeAgentTasksCount}
             </span>
           )}
         </button>

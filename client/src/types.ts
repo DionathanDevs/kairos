@@ -52,7 +52,7 @@ export interface HeatmapData {
 
 export type Language = 'pt' | 'en';
 
-export type AppTab = 'habits' | 'tasks';
+export type AppTab = 'habits' | 'tasks' | 'agent';
 export type TaskPriority = 'high' | 'medium' | 'low';
 export type TaskCategory = 'personal' | 'work';
 
@@ -67,3 +67,46 @@ export interface Task {
   created_at: string;
 }
 
+export type AgentTaskStatus =
+  | 'planning'
+  | 'ready'
+  | 'in_progress'
+  | 'blocked'
+  | 'in_review'
+  | 'completed';
+
+export type AgentTaskLogLevel =
+  | 'info'
+  | 'progress'
+  | 'error'
+  | 'impediment'
+  | 'artifact';
+
+export interface AgentTaskLog {
+  id: string;
+  task_id: string;
+  level: AgentTaskLogLevel;
+  message: string;
+  metadata: string;
+  created_at: string;
+}
+
+export interface AgentTask {
+  id: string;
+  title: string;
+  intent: string;
+  description: string;
+  acceptance_criteria: string;
+  repository_url: string;
+  target_branch: string;
+  priority: TaskPriority;
+  status: AgentTaskStatus;
+  artifact_url: string;
+  agent_name: string;
+  order_index: number;
+  created_at: string;
+  updated_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  logs: AgentTaskLog[];
+}
