@@ -5,7 +5,11 @@ import type {
   Habit,
   Task,
   TaskPriority,
-  TaskCategory
+  TaskCategory,
+  AgentTask,
+  AgentTaskStatus,
+  AgentTaskLog,
+  AgentTaskLogLevel
 } from '../types';
 
 const API_BASE = '/api';
@@ -154,6 +158,115 @@ export const api = {
     });
     if (!res.ok) throw new Error('Failed to clear completed tasks');
     return res.json();
+  },
+
+  // AI Agent Tasks API
+  async getAgentTasks(status?: AgentTaskStatus): Promise<{ tasks: AgentTask[] }> {
+    const query = status ? `?status=${status}` : '';
+    const res = await fetch(`${API_BASE}/agent-tasks${query}`);
+    if (!res.ok) throw new Error('Failed to fetch AI agent tasks');
+    return res.json();
+  },
+
+  async createAgentTask(input: {
+    title: string;
+    intent: string;
+    repository_url: string;
+    description?: string;
+    acceptance_criteria?: string;
+    target_branch?: string;
+    priority?: TaskPriority;
+    status?: AgentTaskStatus;
+  }): Promise<AgentTask> {
+    const res = await fetch(`${API_BASE}/agent-tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input)
+    });
+    if (!res.ok) throw new Error('Failed to create AI agent task');
+    return res.json();
+  },
+
+  async updateAgentTask(
+    id: string,
+    input: {
+      title: string;
+      intent: string;
+      repository_url: string;
+      description?: string;
+      acceptance_criteria?: string;
+      target_branch?: string;
+      priority?: TaskPriority;
+      status?: AgentTaskStatus;
+      artifact_url?: string;
+    }
+  ): Promise<AgentTask> {
+    const res = await fetch(`${API_BASE}/agent-tasks/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input)
+    });
+    if (!res.ok) throw new Error('Failed to update AI agent task');
+    return res.json();
+  },
+
+  async markAgentTaskReady(id: string): Promise<AgentTask> {
+    const res = await fetch(`${API_BASE}/agent-tasks/${id}/ready`, {
+      method: 'PATCH'
+    });
+    if (!res.ok) throw new Error('Failed to mark AI agent task as ready');
+    return res.json();
+  },
+
+  async claimNextAgentTask(agentName?: string): Promise<{ task: AgentTask | null }> {
+    const res = await fetch(`${API_BASE}/agent-tasks/queue/next`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agent_name: agentName })
+    });
+    if (!res.ok) throw new Error('Failed to claim next AI agent task');
+    return res.json();
+  },
+
+  async appendAgentTaskLog(
+    id: string,
+    input: {
+      level?: AgentTaskLogLevel;
+      message: string;
+      metadata?: string;
+      mark_blocked?: boolean;
+    }
+  ): Promise<{ log: AgentTaskLog; task: AgentTask }> {
+    const res = await fetch(`${API_BASE}/agent-tasks/${id}/logs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input)
+    });
+    if (!res.ok) throw new Error('Failed to append AI agent task log');
+    return res.json();
+  },
+
+  async completeAgentTask(
+    id: string,
+    input: {
+      artifact_url: string;
+      summary?: string;
+      status?: 'in_review' | 'completed';
+    }
+  ): Promise<AgentTask> {
+    const res = await fetch(`${API_BASE}/agent-tasks/${id}/complete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input)
+    });
+    if (!res.ok) throw new Error('Failed to complete AI agent task');
+    return res.json();
+  },
+
+  async deleteAgentTask(id: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/agent-tasks/${id}`, {
+      method: 'DELETE'
+    });
+    if (!res.ok) throw new Error('Failed to delete AI agent task');
   }
 };
-

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, CheckCheck, RotateCcw, Trash2, Globe } from 'lucide-react';
+import { Plus, CheckCheck, RotateCcw, Trash2, Globe, Play, RefreshCw } from 'lucide-react';
 import type { AppTab, Language } from '../types';
 import { translations } from '../i18n/translations';
 
@@ -13,6 +13,9 @@ interface HeaderProps {
   onCompleteAllTasks?: () => void;
   onClearCompletedTasks?: () => void;
   onOpenNewTask?: () => void;
+  onOpenNewAgentTask?: () => void;
+  onClaimNextAgentTask?: () => void;
+  onRefreshAgentTasks?: () => void;
   isActionLoading?: boolean;
 }
 
@@ -26,10 +29,20 @@ export const Header: React.FC<HeaderProps> = ({
   onCompleteAllTasks,
   onClearCompletedTasks,
   onOpenNewTask,
+  onOpenNewAgentTask,
+  onClaimNextAgentTask,
+  onRefreshAgentTasks,
   isActionLoading = false
 }) => {
   const t = translations[lang];
   const isTasks = activeTab === 'tasks';
+  const isAgent = activeTab === 'agent';
+
+  const subtitle = isAgent
+    ? t.agentTasks.subtitle
+    : isTasks
+    ? t.tasks.subtitle
+    : t.appSubtitle;
 
   return (
     <header className="mt-6 sm:mt-4 md:mt-0 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 pt-2 border-b border-dark-border">
@@ -55,14 +68,40 @@ export const Header: React.FC<HeaderProps> = ({
             <span>{lang.toUpperCase()}</span>
           </button>
         </div>
-        <p className="text-sm text-gray-400 mt-1 font-normal">
-          {isTasks ? t.tasks.subtitle : t.appSubtitle}
-        </p>
+        <p className="text-sm text-gray-400 mt-1 font-normal">{subtitle}</p>
       </div>
 
       {/* Contextual Action Buttons */}
       <div className="flex flex-wrap items-center justify-center md:justify-end gap-2.5">
-        {isTasks ? (
+        {isAgent ? (
+          <>
+            <button
+              onClick={onRefreshAgentTasks}
+              disabled={isActionLoading}
+              className="flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-medium rounded-full bg-dark-card border border-dark-border hover:border-gray-500 text-gray-200 hover:text-white transition-all active:scale-95 disabled:opacity-50"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-brand-green" />
+              <span>{t.agentTasks.refreshQueue}</span>
+            </button>
+
+            <button
+              onClick={onClaimNextAgentTask}
+              disabled={isActionLoading}
+              className="flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-medium rounded-full bg-dark-card border border-dark-border hover:border-brand-green/60 text-gray-200 hover:text-white transition-all active:scale-95 disabled:opacity-50"
+            >
+              <Play className="w-3.5 h-3.5 text-brand-green fill-current" />
+              <span>{t.agentTasks.claimNextBtn}</span>
+            </button>
+
+            <button
+              onClick={onOpenNewAgentTask}
+              className="flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold rounded-full bg-brand-green text-black hover:bg-brand-greenLight transition-all active:scale-95"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>{t.agentTasks.newAgentTask}</span>
+            </button>
+          </>
+        ) : isTasks ? (
           <>
             <button
               onClick={onCompleteAllTasks}

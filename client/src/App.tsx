@@ -9,6 +9,8 @@ import { ConsistencyHeatmap } from './components/ConsistencyHeatmap';
 import { HabitModal } from './components/HabitModal';
 import { TaskList } from './components/TaskList';
 import { TaskModal } from './components/TaskModal';
+import { AgentTaskList } from './components/AgentTaskList';
+import { AgentTaskModal } from './components/AgentTaskModal';
 import { ConfirmModal } from './components/ConfirmModal';
 import { api } from './api/client';
 import type {
@@ -20,7 +22,10 @@ import type {
   AppTab,
   Task,
   TaskCategory,
-  TaskPriority
+  TaskPriority,
+  AgentTask,
+  AgentTaskStatus,
+  AgentTaskLogLevel
 } from './types';
 import { translations } from './i18n/translations';
 
@@ -29,13 +34,14 @@ export function App() {
     return (localStorage.getItem('habit_tracker_lang') as Language) || 'pt';
   });
 
-  // Navigation State (Initial tab: 'habits')
   const [activeTab, setActiveTab] = useState<AppTab>('habits');
   const [taskCategory, setTaskCategory] = useState<TaskCategory>('personal');
 
   // Habits State
   const [habits, setHabits] = useState<HabitWithWeekLogs[]>([]);
-  const [weekDays, setWeekDays] = useState<{ name: 'Seg' | 'Ter' | 'Qua' | 'Qui' | 'Sex' | 'Sáb' | 'Dom'; date: string; isToday: boolean }[]>([]);
+  const [weekDays, setWeekDays] = useState<
+    { name: 'Seg' | 'Ter' | 'Qua' | 'Qui' | 'Sex' | 'Sáb' | 'Dom'; date: string; isToday: boolean }[]
+  >([]);
   const [stats, setStats] = useState<DashboardStats>({
     perfectStreakDays: 0,
     weeklyConsistencyPct: 0,
@@ -46,24 +52,27 @@ export function App() {
   });
   const [heatmapData, setHeatmapData] = useState<HeatmapData | null>(null);
 
-  // Tasks State (loaded on demand when Tasks tab is opened)
+  // Tasks & Agent Tasks State
   const [tasks, setTasks] = useState<Task[]>([]);
   const [tasksLoaded, setTasksLoaded] = useState(false);
+  const [agentTasks, setAgentTasks] = useState<AgentTask[]>([]);
+  const [agentTasksLoaded, setAgentTasksLoaded] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Habit Modal State
+  // Modals State
   const [isHabitModalOpen, setIsHabitModalOpen] = useState(false);
   const [habitToEdit, setHabitToEdit] = useState<Habit | null>(null);
   const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
 
-  // Task Modal State
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [showClearTasksConfirmModal, setShowClearTasksConfirmModal] = useState(false);
 
-  // Toast State
+  const [isAgentTaskModalOpen, setIsAgentTaskModalOpen] = useState(false);
+  const [agentTaskToEdit, setAgentTaskToEdit] = useState<AgentTask | null>(null);
+
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -105,37 +114,37 @@ export function App() {
     }
   }, []);
 
+  const loadAgentTasks = useCallback(async () => {
+    try {
+      const res = await api.getAgentTasks();
+      setAgentTasks(res.tasks);
+      setAgentTasksLoaded(true);
+    } catch (err) {
+      console.error('Failed to load AI agent tasks:', err);
+    }
+  }, []);
+
   useEffect(() => {
     loadData();
   }, [loadData]);
 
   useEffect(() => {
-    if (activeTab === 'tasks' && !tasksLoaded) {
-      loadTasks();
-    }
-  }, [activeTab, tasksLoaded, loadTasks]);
+    if (activeTab === 'tasks' && !tasksLoaded) loadTasks();
+    if (activeTab === 'agent' && !agentTasksLoaded) loadAgentTasks();
+  }, [activeTab, tasksLoaded, agentTasksLoaded, loadTasks, loadAgentTasks]);
 
   // --- HABIT HANDLERS ---
-
   const handleToggleDay = async (habitId: string, date: string) => {
     setHabits((prev) =>
-      prev.map((h) => {
-        if (h.id !== habitId) return h;
-        return {
-          ...h,
-          days: h.days.map((d) =>
-            d.date === date ? { ...d, completed: !d.completed } : d
-          )
-        };
-      })
+      prev.map((h) =>
+        h.id !== habitId
+          ? h
+          : { ...h, days: h.days.map((d) => (d.date === date ? { ...d, completed: !d.completed } : d)) }
+      )
     );
-
     try {
       await api.toggleHabit(habitId, date);
-      const [statsRes, heatmapRes] = await Promise.all([
-        api.getStats(),
-        api.getHeatmap(22)
-      ]);
+      const [statsRes, heatmapRes] = await Promise.all([api.getStats(), api.getHeatmap(22)]);
       setStats(statsRes);
       setHeatmapData(heatmapRes);
     } catch (err) {
@@ -149,24 +158,13 @@ export function App() {
       setActionLoading(true);
       await api.markAllToday();
       await loadData();
-
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.6 },
-        colors: ['#10b981', '#34d399', '#7dd3fc', '#ffffff']
-      });
-
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, colors: ['#10b981', '#34d399', '#7dd3fc', '#ffffff'] });
       showToast(translations[lang].modal.markAllSuccess);
     } catch (err) {
       console.error('Failed to mark all today:', err);
     } finally {
       setActionLoading(false);
     }
-  };
-
-  const handleResetWeek = () => {
-    setShowResetConfirmModal(true);
   };
 
   const handleExecuteResetWeek = async () => {
@@ -182,75 +180,27 @@ export function App() {
     }
   };
 
-  const handleOpenNewHabit = () => {
-    setHabitToEdit(null);
-    setIsHabitModalOpen(true);
-  };
-
-  const handleEditHabit = (habit: HabitWithWeekLogs) => {
-    setHabitToEdit(habit);
-    setIsHabitModalOpen(true);
-  };
-
   const handleSaveHabit = async (title: string, description: string, color: string) => {
-    if (habitToEdit) {
-      await api.updateHabit(habitToEdit.id, title, description, color);
-    } else {
-      await api.createHabit(title, description, color);
-    }
-    await loadData();
-  };
-
-  const handleDeleteHabit = async (id: string) => {
-    await api.deleteHabit(id);
+    if (habitToEdit) await api.updateHabit(habitToEdit.id, title, description, color);
+    else await api.createHabit(title, description, color);
     await loadData();
   };
 
   // --- TASK HANDLERS ---
-
-  const handleOpenNewTask = () => {
-    setTaskToEdit(null);
-    setIsTaskModalOpen(true);
-  };
-
-  const handleEditTask = (task: Task) => {
-    setTaskToEdit(task);
-    setIsTaskModalOpen(true);
-  };
-
-  const handleSaveTask = async (
-    title: string,
-    description: string,
-    priority: TaskPriority,
-    category: TaskCategory
-  ) => {
-    if (taskToEdit) {
-      await api.updateTask(taskToEdit.id, title, description, priority, category);
-    } else {
-      await api.createTask(title, description, priority, category);
-    }
+  const handleSaveTask = async (title: string, description: string, priority: TaskPriority, category: TaskCategory) => {
+    if (taskToEdit) await api.updateTask(taskToEdit.id, title, description, priority, category);
+    else await api.createTask(title, description, priority, category);
     setTaskCategory(category);
-    const tasksRes = await api.getTasks();
-    setTasks(tasksRes.tasks);
-  };
-
-  const handleDeleteTask = async (id: string) => {
-    await api.deleteTask(id);
-    const tasksRes = await api.getTasks();
-    setTasks(tasksRes.tasks);
+    await loadTasks();
   };
 
   const handleToggleTask = async (taskId: string) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t))
-    );
-
+    setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t)));
     try {
       await api.toggleTask(taskId);
     } catch (err) {
       console.error('Failed to toggle task:', err);
-      const tasksRes = await api.getTasks();
-      setTasks(tasksRes.tasks);
+      await loadTasks();
     }
   };
 
@@ -258,16 +208,8 @@ export function App() {
     try {
       setActionLoading(true);
       await api.completeAllTasks(taskCategory);
-      const tasksRes = await api.getTasks();
-      setTasks(tasksRes.tasks);
-
-      confetti({
-        particleCount: 70,
-        spread: 55,
-        origin: { y: 0.6 },
-        colors: ['#10b981', '#34d399', '#7dd3fc', '#ffffff']
-      });
-
+      await loadTasks();
+      confetti({ particleCount: 70, spread: 55, origin: { y: 0.6 }, colors: ['#10b981', '#34d399', '#7dd3fc', '#ffffff'] });
       showToast(translations[lang].tasks.modal.completeAllSuccess);
     } catch (err) {
       console.error('Failed to complete all tasks:', err);
@@ -276,16 +218,11 @@ export function App() {
     }
   };
 
-  const handleClearCompletedTasks = () => {
-    setShowClearTasksConfirmModal(true);
-  };
-
   const handleExecuteClearCompletedTasks = async () => {
     try {
       setActionLoading(true);
       await api.clearCompletedTasks(taskCategory);
-      const tasksRes = await api.getTasks();
-      setTasks(tasksRes.tasks);
+      await loadTasks();
       setShowClearTasksConfirmModal(false);
       showToast(translations[lang].tasks.modal.clearCompletedSuccess);
     } catch (err) {
@@ -295,16 +232,89 @@ export function App() {
     }
   };
 
-  // Quick Add from Navigation Menu '+' button
+  // --- AI AGENT TASK HANDLERS ---
+  const handleSaveAgentTask = async (input: {
+    title: string;
+    intent: string;
+    repository_url: string;
+    target_branch: string;
+    acceptance_criteria: string;
+    description: string;
+    priority: TaskPriority;
+    status: AgentTaskStatus;
+  }) => {
+    if (agentTaskToEdit) await api.updateAgentTask(agentTaskToEdit.id, input);
+    else await api.createAgentTask(input);
+    await loadAgentTasks();
+  };
+
+  const handleMarkAgentTaskReady = async (taskId: string) => {
+    await api.markAgentTaskReady(taskId);
+    await loadAgentTasks();
+    showToast(translations[lang].agentTasks.markedReadyToast);
+  };
+
+  const handleClaimNextAgentTask = async () => {
+    try {
+      setActionLoading(true);
+      const res = await api.claimNextAgentTask('kairos-external-agent');
+      await loadAgentTasks();
+      showToast(
+        res.task ? translations[lang].agentTasks.claimedToast : translations[lang].agentTasks.queueEmptyToast
+      );
+    } catch (err) {
+      console.error('Failed to claim next AI task:', err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleApproveAgentTaskReview = async (task: AgentTask) => {
+    await api.updateAgentTask(task.id, {
+      title: task.title,
+      intent: task.intent,
+      repository_url: task.repository_url,
+      target_branch: task.target_branch,
+      acceptance_criteria: task.acceptance_criteria,
+      description: task.description,
+      priority: task.priority,
+      status: 'completed',
+      artifact_url: task.artifact_url
+    });
+    await loadAgentTasks();
+  };
+
+  const handleAppendAgentLog = async (
+    taskId: string,
+    level: AgentTaskLogLevel,
+    message: string,
+    markBlocked?: boolean
+  ) => {
+    await api.appendAgentTaskLog(taskId, { level, message, mark_blocked: markBlocked });
+    await loadAgentTasks();
+  };
+
+  const handleCompleteWithArtifact = async (taskId: string, artifactUrl: string) => {
+    await api.completeAgentTask(taskId, { artifact_url: artifactUrl, status: 'in_review' });
+    await loadAgentTasks();
+    showToast(translations[lang].agentTasks.completedToast);
+  };
+
   const handleQuickAdd = () => {
     if (activeTab === 'habits') {
-      handleOpenNewHabit();
+      setHabitToEdit(null);
+      setIsHabitModalOpen(true);
+    } else if (activeTab === 'tasks') {
+      setTaskToEdit(null);
+      setIsTaskModalOpen(true);
     } else {
-      handleOpenNewTask();
+      setAgentTaskToEdit(null);
+      setIsAgentTaskModalOpen(true);
     }
   };
 
   const pendingTasksCount = tasks.filter((t) => !t.completed).length;
+  const activeAgentTasksCount = agentTasks.filter((t) => t.status !== 'completed').length;
 
   if (loading) {
     return (
@@ -319,7 +329,6 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-dark-bg text-gray-100 safe-area-container pb-28 md:pb-10 font-sans selection:bg-brand-green selection:text-black">
-      {/* Toast message notification */}
       {toastMessage && (
         <div className="fixed top-[max(1.25rem,env(safe-area-inset-top,0px))] left-1/2 -translate-x-1/2 z-50 bg-brand-green text-black font-semibold text-xs sm:text-sm px-4 py-2 rounded-full animate-in fade-in slide-in-from-top duration-200">
           {toastMessage}
@@ -327,57 +336,47 @@ export function App() {
       )}
 
       <main className="max-w-4xl mx-auto">
-        {/* Pill Navigation Menu (Top on Desktop, Fixed Bottom on Mobile) */}
         <NavigationMenu
           activeTab={activeTab}
           lang={lang}
           pendingTasksCount={pendingTasksCount}
+          activeAgentTasksCount={activeAgentTasksCount}
           onSelectTab={setActiveTab}
           onQuickAdd={handleQuickAdd}
         />
 
-        {/* Header with Title & Contextual Quick Actions */}
         <Header
           lang={lang}
           activeTab={activeTab}
           onToggleLang={toggleLanguage}
           onMarkAllToday={handleMarkAllToday}
-          onResetWeek={handleResetWeek}
-          onOpenNewHabit={handleOpenNewHabit}
+          onResetWeek={() => setShowResetConfirmModal(true)}
+          onOpenNewHabit={() => { setHabitToEdit(null); setIsHabitModalOpen(true); }}
           onCompleteAllTasks={handleCompleteAllTasks}
-          onClearCompletedTasks={handleClearCompletedTasks}
-          onOpenNewTask={handleOpenNewTask}
+          onClearCompletedTasks={() => setShowClearTasksConfirmModal(true)}
+          onOpenNewTask={() => { setTaskToEdit(null); setIsTaskModalOpen(true); }}
+          onOpenNewAgentTask={() => { setAgentTaskToEdit(null); setIsAgentTaskModalOpen(true); }}
+          onClaimNextAgentTask={handleClaimNextAgentTask}
+          onRefreshAgentTasks={loadAgentTasks}
           isActionLoading={actionLoading}
         />
 
         {activeTab === 'habits' ? (
           <>
-            {/* 1. Habit Matrix with Weekdays & Green Circular Buttons */}
             <div className="mt-6">
               <HabitGrid
                 habits={habits}
                 weekDays={weekDays}
                 lang={lang}
                 onToggleDay={handleToggleDay}
-                onEditHabit={handleEditHabit}
+                onEditHabit={(habit) => { setHabitToEdit(habit); setIsHabitModalOpen(true); }}
               />
             </div>
-
-            {/* 2. Motivational Consistency Heatmap (CONSISTENCY HISTORY) */}
-            <ConsistencyHeatmap
-              data={heatmapData}
-              lang={lang}
-              todayDate={weekDays.find((d) => d.isToday)?.date}
-            />
-
-            {/* 3. Metric Cards (Sequência Perfeita, Consistência, Hoje) */}
+            <ConsistencyHeatmap data={heatmapData} lang={lang} todayDate={weekDays.find((d) => d.isToday)?.date} />
             <StatCards stats={stats} lang={lang} />
-
-            {/* 4. Weekly Bar Chart (Desempenho Diário da Semana / Completed Habits) */}
             <WeeklyChart dailySummary={stats.weekDailySummary} lang={lang} />
           </>
-        ) : (
-          /* Tasks Tab: Follows HabitGrid reference without mirroring GitHub consistency or extra analytics */
+        ) : activeTab === 'tasks' ? (
           <div className="mt-6">
             <TaskList
               tasks={tasks}
@@ -385,23 +384,33 @@ export function App() {
               lang={lang}
               onChangeCategory={setTaskCategory}
               onToggleTask={handleToggleTask}
-              onEditTask={handleEditTask}
+              onEditTask={(task) => { setTaskToEdit(task); setIsTaskModalOpen(true); }}
+            />
+          </div>
+        ) : (
+          <div className="mt-6">
+            <AgentTaskList
+              tasks={agentTasks}
+              lang={lang}
+              onEditTask={(task) => { setAgentTaskToEdit(task); setIsAgentTaskModalOpen(true); }}
+              onMarkReady={handleMarkAgentTaskReady}
+              onApproveReview={handleApproveAgentTaskReview}
+              onAppendLog={handleAppendAgentLog}
+              onCompleteWithArtifact={handleCompleteWithArtifact}
             />
           </div>
         )}
       </main>
 
-      {/* Habit Create / Edit Modal / Bottom Sheet */}
       <HabitModal
         isOpen={isHabitModalOpen}
         habitToEdit={habitToEdit}
         lang={lang}
         onClose={() => setIsHabitModalOpen(false)}
         onSave={handleSaveHabit}
-        onDelete={handleDeleteHabit}
+        onDelete={async (id) => { await api.deleteHabit(id); await loadData(); }}
       />
 
-      {/* Task Create / Edit Modal / Bottom Sheet */}
       <TaskModal
         isOpen={isTaskModalOpen}
         taskToEdit={taskToEdit}
@@ -409,10 +418,18 @@ export function App() {
         lang={lang}
         onClose={() => setIsTaskModalOpen(false)}
         onSave={handleSaveTask}
-        onDelete={handleDeleteTask}
+        onDelete={async (id) => { await api.deleteTask(id); await loadTasks(); }}
       />
 
-      {/* Confirmation Modal for Resetting Current Week */}
+      <AgentTaskModal
+        isOpen={isAgentTaskModalOpen}
+        taskToEdit={agentTaskToEdit}
+        lang={lang}
+        onClose={() => setIsAgentTaskModalOpen(false)}
+        onSave={handleSaveAgentTask}
+        onDelete={async (id) => { await api.deleteAgentTask(id); await loadAgentTasks(); }}
+      />
+
       <ConfirmModal
         isOpen={showResetConfirmModal}
         title={lang === 'pt' ? 'Resetar Semana' : 'Reset Week'}
@@ -425,7 +442,6 @@ export function App() {
         onCancel={() => setShowResetConfirmModal(false)}
       />
 
-      {/* Confirmation Modal for Clearing Completed Tasks */}
       <ConfirmModal
         isOpen={showClearTasksConfirmModal}
         title={translations[lang].tasks.modal.confirmClearTitle}

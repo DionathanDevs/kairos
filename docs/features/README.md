@@ -12,9 +12,11 @@ Bem-vindo ao catálogo de funcionalidades atuais do **Kairos**. Cada documento d
    - Cálculo de *Perfect Streak*, percentual de consistência semanal, gráfico diário de barras (`WeeklyChart`) e mapa de calor anual estilo GitHub (`ConsistencyHeatmap`).
 3. [**Gerenciamento de Tarefas por Prioridade e Contexto (`tasks-management.md`)**](./tasks-management.md)
    - Organização em abas **Pessoais** e **Trabalho**, tags de prioridade (`Alta`, `Média`, `Baixa`), ordenação inteligente, paginação progressiva e ações em lote.
-4. [**Integração com Telegram Task Bot (`telegram-bot.md`)**](./telegram-bot.md)
+4. [**Módulo de Tarefas para Agente IA (`ai-agent-tasks.md`)**](./ai-agent-tasks.md)
+   - Fila de automação para agentes externos (`planning` $\rightarrow$ `ready` $\rightarrow$ `in_progress` $\rightarrow$ `in_review` / `completed` + `blocked`), referência de repositório alvo, intenção da tarefa, histórico de logs e entrega de PR/artefato.
+5. [**Integração com Telegram Task Bot (`telegram-bot.md`)**](./telegram-bot.md)
    - Criação e listagem de tarefas via Telegram (modos *Polling* e *Webhook*), parser de linguagem natural com tags (`#work`, `#pessoal`, `!alta`, `!baixa`, `| descrição`) e controle de acesso *Zero-Trust*.
-5. [**Experiência Mobile-First (PWA) e Internacionalização (`pwa-and-i18n.md`)**](./pwa-and-i18n.md)
+6. [**Experiência Mobile-First (PWA) e Internacionalização (`pwa-and-i18n.md`)**](./pwa-and-i18n.md)
    - Suporte nativo iOS/Android, *Safe Areas*, navegação adaptativa topo/base e alternância instantânea Português (`pt`) / Inglês (`en`).
 
 ---
@@ -46,6 +48,20 @@ Bem-vindo ao catálogo de funcionalidades atuais do **Kairos**. Cada documento d
 | `DELETE` | `/api/tasks/:id` | `DeleteTaskUseCase` | Exclui permanentemente uma tarefa. |
 | `POST` | `/api/tasks/actions/complete-all` | `CompleteAllTasksUseCase` | Conclui todas as tarefas pendentes da categoria informada (`{ category }`). |
 | `POST` | `/api/tasks/actions/clear-completed` | `ClearCompletedTasksUseCase` | Remove todas as tarefas já concluídas da categoria informada (`{ category }`). |
+
+### Tarefas para Agente IA (`/api/agent-tasks`)
+
+| Método | Rota | Caso de Uso | Descrição |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/agent-tasks` | `GetAgentTasksUseCase` | Lista tarefas de IA (com filtro opcional `?status=ready`, etc.) e seus históricos de logs. |
+| `GET` | `/api/agent-tasks/:id` | `GetAgentTaskByIdUseCase` | Obtém detalhes completos e logs de uma tarefa de IA. |
+| `POST` | `/api/agent-tasks` | `CreateAgentTaskUseCase` | Cria nova tarefa de IA (`title`, `intent`, `repository_url`, `acceptance_criteria`, `priority`, `status`). |
+| `PUT` | `/api/agent-tasks/:id` | `UpdateAgentTaskUseCase` | Atualiza dados ou estado de uma tarefa de IA. |
+| `PATCH` | `/api/agent-tasks/:id/ready` | `MarkAgentTaskReadyUseCase` | **(1)** Marca a tarefa como elegível para automação (`ready`). |
+| `POST` | `/api/agent-tasks/queue/next` | `ClaimNextAgentTaskUseCase` | **(2)** Busca e reserva atomicamente a próxima tarefa `ready` da fila (`in_progress`). |
+| `POST` | `/api/agent-tasks/:id/logs` | `AppendAgentTaskLogUseCase` | **(3)** Registra progresso, erro ou impedimento (`mark_blocked`). |
+| `POST` | `/api/agent-tasks/:id/complete` | `CompleteAgentTaskUseCase` | **(4)** Conclui a tarefa anexando o artefato gerado (`artifact_url`, ex: link do PR). |
+| `DELETE` | `/api/agent-tasks/:id` | `DeleteAgentTaskUseCase` | Remove uma tarefa de IA e seus logs. |
 
 ### Telegram & Saúde (`/api/telegram`, `/api/health`)
 

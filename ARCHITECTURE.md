@@ -78,13 +78,14 @@ Não possui dependências externas, frameworks HTTP ou acesso a banco de dados:
   - [`Habit.ts`](./server/src/domain/entities/Habit.ts): Valida título obrigatório (`1..100` caracteres), cor hexadecimal padrão (`#10b981`) e índice de ordenação.
   - [`HabitLog.ts`](./server/src/domain/entities/HabitLog.ts): Representa o registro de conclusão de um hábito em uma data específica (`YYYY-MM-DD`).
   - [`Task.ts`](./server/src/domain/entities/Task.ts): Valida título (`1..100` caracteres), prioridade (`high` | `medium` | `low`) e categoria (`personal` | `work`).
+  - [`AgentTask.ts`](./server/src/domain/entities/AgentTask.ts) & [`AgentTaskLog.ts`](./server/src/domain/entities/AgentTaskLog.ts): Modelam tarefas destinadas a agentes autônomos externos (`planning` $\rightarrow$ `ready` $\rightarrow$ `in_progress` $\rightarrow$ `in_review` / `completed` + `blocked`), validando intenção (`intent`), repositório alvo (`repository_url`), artefato gerado (`artifact_url`) e histórico de logs/impedimentos.
 - **Serviços de Domínio (`domain/services/`)**:
   - [`StreakCalculator.ts`](./server/src/domain/services/StreakCalculator.ts): Calcula a sequência perfeita de dias consecutivos com 100% dos hábitos concluídos. Se o dia atual ainda não estiver 100% concluído, preserva a sequência acumulada até ontem.
   - [`ConsistencyCalculator.ts`](./server/src/domain/services/ConsistencyCalculator.ts): Calcula o percentual de consistência semanal ($\text{round}(\frac{\text{concluídos}}{\text{hábitos} \times 7} \times 100)$).
   - [`HeatmapCalculator.ts`](./server/src/domain/services/HeatmapCalculator.ts): Converte a taxa diária de conclusão em níveis discretos de intensidade `0..4` (`0`: 0%, `1`: $\le 25\%$, `2`: $\le 50\%$, `3`: $\le 75\%$, `4`: $> 75\%$).
   - [`DateRangeService.ts`](./server/src/domain/services/DateRangeService.ts): Utilitários determinísticos para cálculo da semana corrente (Segunda a Domingo) e janelas de semanas do Heatmap em fuso local.
 - **Contratos de Repositório (`domain/repositories/`)**:
-  - `IHabitRepository`, `IHabitLogRepository` e `ITaskRepository`.
+  - `IHabitRepository`, `IHabitLogRepository`, `ITaskRepository` e `IAgentTaskRepository`.
 - **Erros de Domínio (`domain/errors/DomainError.ts`)**:
   - `DomainError` (base, HTTP `422`), `ValidationError` (HTTP `400`) e `NotFoundError` (HTTP `404`).
 
@@ -95,8 +96,9 @@ Orquestra o fluxo de negócio combinando entidades, serviços de domínio e inte
   - `GetDashboardStatsUseCase`: Calcula `perfectStreakDays`, `weeklyConsistencyPct`, resumo de hoje e `weekDailySummary`.
   - `GetHeatmapUseCase`: Constrói a matriz histórica de semanas (padrão 20–22 semanas) com `totalActiveDays` e `completionRatePct`.
   - `CreateHabitUseCase`, `UpdateHabitUseCase`, `DeleteHabitUseCase`, `ToggleHabitLogUseCase`, `MarkAllTodayUseCase`, `ResetWeekUseCase`.
-- **Casos de Uso de Tarefas (`TaskUseCases.ts`)**:
+- **Casos de Uso de Tarefas (`TaskUseCases.ts` & `AgentTaskUseCases.ts`)**:
   - `GetTasksUseCase`, `CreateTaskUseCase`, `UpdateTaskUseCase`, `ToggleTaskUseCase`, `DeleteTaskUseCase`, `CompleteAllTasksUseCase`, `ClearCompletedTasksUseCase`.
+  - `GetAgentTasksUseCase`, `GetAgentTaskByIdUseCase`, `CreateAgentTaskUseCase`, `UpdateAgentTaskUseCase`, `MarkAgentTaskReadyUseCase`, `ClaimNextAgentTaskUseCase`, `AppendAgentTaskLogUseCase`, `CompleteAgentTaskUseCase`, `DeleteAgentTaskUseCase`.
 - **Casos de Uso e Serviços do Telegram**:
   - `TelegramMessageParser`: Analisa mensagens de texto e comandos (`/tarefas`, `/tarefa`, `/ajuda`), extraindo tags de categoria (`#work`, `#pessoal`), prioridade (`!alta`, `!media`, `!baixa`) e descrições separadas por `|` ou múltiplas linhas.
   - `HandleTelegramUpdateUseCase`: Aplica autorização *Zero-Trust* por `TELEGRAM_ALLOWED_CHAT_IDS` e executa a criação ou listagem de tarefas.
